@@ -3,67 +3,70 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-public class PlayerStates : MonoBehaviour
+public class PlayerStates 
 {
-    public struct Variables
-    {
-        public Rigidbody2D rb;
-        public SpriteRenderer renderer;
+    [SerializeField] protected Rigidbody2D rb;
+    [SerializeField] protected SpriteRenderer renderer;
 
-        public float _walkSpeed;
-        public float _jumpHeight;
-        public float _airSpeed;
-        public Transform groundCheck;
-        public Transform groundCheckL;
-        public Transform groundCheckR;
+    [SerializeField] protected float _walkSpeed;
+    [SerializeField] protected float _walkAccel;
+    [SerializeField] protected float _jumpHeight;
+    [SerializeField] protected float _airSpeed;
+    [SerializeField] protected float _airAccel;
+    [SerializeField] protected bool _isGrounded;
+    [SerializeField] protected Transform groundCheck;
+    [SerializeField] protected Transform groundCheckL;
+    [SerializeField] protected Transform groundCheckR;
 
-        public PlayerStates currentState;
-    }
+    public PlayerStates currentState;
 
-    // common base class for sharing stuff (e.g. static counter variables)
-    // also forces people to implement minimal functionality
-    
-    
+
     public virtual void handleInput(PlayerController thisObject) { }
-    
-    public void Awake(PlayerController thisObject)
-    {
-        Variables var;
 
-        var.rb = GameObject.GetComponent<Rigidbody2D>();
-        var.renderer = GameObject.GetComponent<SpriteRenderer>();
-        var.currentState = new RunningState();
+    public void SetComponents(Rigidbody2D _rb, SpriteRenderer _renderer, PlayerStates _currentState, Transform _groundCheck, Transform _groundCheckL, Transform _groundCheckR, float __walkSpeed, float __jumpHeight, float __airSpeed, bool __isGrounded)
+    {
+        rb = _rb;
+        renderer = _renderer;
+        currentState = _currentState;
+        _walkSpeed = __walkSpeed;
+        _walkAccel = __walkSpeed;
+        _jumpHeight = __jumpHeight;
+        _airSpeed = __airSpeed;
+        _airAccel = __airSpeed;
+        _isGrounded = __isGrounded;
+        groundCheck = _groundCheck;
+        groundCheckL = _groundCheckL;
+        groundCheckR = _groundCheckR;
     }
 };
 
 public class RunningState : PlayerStates
 {
-
     public override void handleInput(PlayerController thisObject)
     {
-        Variables var;
-
         if (Input.GetKey("d") || Input.GetKey("right"))
         {
-            var._walkSpeed = 10.0f;
-            var.renderer.flipX = false;
+            _walkSpeed = _walkAccel;
+            thisObject.renderer.flipX = false;
         }
         else if (Input.GetKey("a") || Input.GetKey("left"))
         {
-            var._walkSpeed = -10.0f;
-            var.renderer.flipX = true;
+            _walkSpeed = -_walkAccel;
+            thisObject.renderer.flipX = true;
         }
         else
         {
-            var._walkSpeed = 0.0f;
+            _walkSpeed = 0.0f;
         }
         if (Input.GetKey("space"))
         {
-            var.rb.velocity = new Vector2(var.rb.velocity.x, var._jumpHeight);
+            thisObject.rb.velocity = new Vector2(thisObject.rb.velocity.x, 30.0f);
+            Debug.Log("Jumped");
+            _isGrounded = false;
             thisObject.currentState = new JumpState();
         }
 
-        var.rb.velocity = new Vector2(var._walkSpeed, var.rb.velocity.y);
+        thisObject.rb.velocity = new Vector2(_walkSpeed, thisObject.rb.velocity.y);
     }
 }
 
@@ -71,65 +74,73 @@ public class JumpState : PlayerStates
 {
     public override void handleInput(PlayerController thisObject)
     {
-        Variables var;
-
-
-        while (Physics2D.Linecast(thisObject.transform.position, var.groundCheck.position, 1 << LayerMask.NameToLayer("Floor")) ||
-        Physics2D.Linecast(thisObject.transform.position, var.groundCheckL.position, 1 << LayerMask.NameToLayer("Floor")) ||
-        Physics2D.Linecast(thisObject.transform.position, var.groundCheckR.position, 1 << LayerMask.NameToLayer("Floor")))
+        if (Physics2D.Linecast(thisObject.transform.position, thisObject.groundCheck.position, 1 << LayerMask.NameToLayer("Floor")) ||
+        Physics2D.Linecast(thisObject.transform.position, thisObject.groundCheckL.position, 1 << LayerMask.NameToLayer("Floor")) ||
+        Physics2D.Linecast(thisObject.transform.position, thisObject.groundCheckR.position, 1 << LayerMask.NameToLayer("Floor")))
         {
-            if (Input.GetKey("d") || Input.GetKey("right"))
-            {
-                var._airSpeed = 15.0f;
-                var.renderer.flipX = false;
-            }
-            else if (Input.GetKey("a") || Input.GetKey("left"))
-            {
-                var._airSpeed = -15.0f;
-                var.renderer.flipX = true;
-            }
+            _isGrounded = true;
+        }
+        else
+        {
+            _isGrounded = false;
         }
 
-        var.rb.velocity = new Vector2(var._airSpeed, var.rb.velocity.y);
-        thisObject.currentState = new RunningState();
+        if (Input.GetKey("d") || Input.GetKey("right"))
+        {
+            _airSpeed = 15.0f;
+            thisObject.renderer.flipX = false;
+        }
+        else if (Input.GetKey("a") || Input.GetKey("left"))
+        {
+            _airSpeed = -15.0f;
+            thisObject.renderer.flipX = true;
+        }
+        else
+        {
+            _airSpeed = 0.0f;
+        }
+
+        thisObject.rb.velocity = new Vector2(_airSpeed, thisObject.rb.velocity.y);
+
+       /* if (Mathf.Abs(thisObject.rb.velocity.x + _airSpeed) > Mathf.Abs(_airSpeed))
+        {
+            thisObject.rb.velocity = new Vector2(_airSpeed, thisObject.rb.velocity.y);
+        }
+        else
+        {
+            thisObject.rb.velocity = new Vector2(thisObject.rb.velocity.x + _airSpeed, thisObject.rb.velocity.y);
+        }*/
+
+        if (_isGrounded == true)
+        {
+            thisObject.currentState = new RunningState();
+        }
+        //thisObject.currentState = new RunningState();
     }
 }
-
-
-
 
 public class PlayerController : MonoBehaviour
 {
     //Animator animator;
-    Rigidbody2D rb;
-    SpriteRenderer renderer;
-
-    public float _walkSpeed = 10.0f;
-    public float _jumpHeight = 30.0f;
-    public float _airSpeed = 10.0f;
+    public Rigidbody2D rb;
+    public SpriteRenderer renderer;
+    public float _walkSpeed;
+    public float _jumpHeight;
+    public float _airSpeed;
+    public bool _isGrounded;
     public Transform groundCheck;
     public Transform groundCheckL;
     public Transform groundCheckR;
-
-
     public PlayerStates currentState;
-
-
-    bool isGrounded;
-
 
     // Start is called before the first frame update
     void Start()
     {
-
         rb = GetComponent<Rigidbody2D>();
         renderer = GetComponent<SpriteRenderer>();
         currentState = new RunningState();
-
-        currentState.Awake(this);
-
+        currentState.SetComponents(rb, renderer, currentState, groundCheck, groundCheckL, groundCheckR, _walkSpeed, _jumpHeight, _airSpeed, _isGrounded);
     }
-
 
     private void FixedUpdate()
     {
