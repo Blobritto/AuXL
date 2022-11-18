@@ -13,7 +13,9 @@ public class PlayerStates
     [SerializeField] protected float _jumpHeight;
     [SerializeField] protected float _airSpeed;
     [SerializeField] protected float _airAccel;
-    [SerializeField] protected bool _isGrounded;
+    [SerializeField] protected bool _jumped;
+    [SerializeField] protected float _coyoteTime;
+    [SerializeField] protected float _coyoteTimeCounter;
     [SerializeField] protected Transform groundCheck;
     [SerializeField] protected Transform groundCheckL;
     [SerializeField] protected Transform groundCheckR;
@@ -22,7 +24,7 @@ public class PlayerStates
     public virtual void handleInput(PlayerController thisObject) { }
 
     // Set all of the variables referenced within the player class.
-    public void SetComponents(Rigidbody2D _rb, SpriteRenderer _renderer, PlayerStates _currentState, Transform _groundCheck, Transform _groundCheckL, Transform _groundCheckR, float __walkSpeed, float __jumpHeight, float __airSpeed)
+    public void SetComponents(Rigidbody2D _rb, SpriteRenderer _renderer, PlayerStates _currentState, Transform _groundCheck, Transform _groundCheckL, Transform _groundCheckR, float __walkSpeed, float __jumpHeight, float __airSpeed, bool __jumped, float __coyoteTime, float __coyoteTimeCounter)
     {
         rb = _rb;
         renderer = _renderer;
@@ -35,6 +37,34 @@ public class PlayerStates
         groundCheck = _groundCheck;
         groundCheckL = _groundCheckL;
         groundCheckR = _groundCheckR;
+        _jumped = __jumped;
+        _coyoteTime = __coyoteTime;
+        _coyoteTimeCounter = __coyoteTimeCounter;
+    }
+
+    public void SetJumped()
+    {
+        _jumped = true;
+    }
+
+    public void ReleaseJump()
+    {
+        _jumped = false;
+    }
+
+    public bool isGrounded()
+    {
+        // If a linecast towards the ground sees the player is touching the floor, then they are grounded.
+        if (Physics2D.Linecast(rb.transform.position, groundCheck.position, 1 << LayerMask.NameToLayer("Floor")) ||
+        Physics2D.Linecast(rb.transform.position, groundCheckL.position, 1 << LayerMask.NameToLayer("Floor")) ||
+        Physics2D.Linecast(rb.transform.position, groundCheckR.position, 1 << LayerMask.NameToLayer("Floor")))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 };
 
@@ -42,6 +72,15 @@ public class RunningState : PlayerStates
 {
     public override void handleInput(PlayerController thisObject)
     {
+        if (isGrounded())
+        {
+            _coyoteTimeCounter = _coyoteTime;
+        }
+        else
+        {
+            _coyoteTimeCounter -= Time.deltaTime;
+        }
+
         // Do walk movement.
         if (Input.GetKey("d") || Input.GetKey("right"))
         {
@@ -57,15 +96,30 @@ public class RunningState : PlayerStates
         {
             _walkSpeed = 0.0f;
         }
-        if (Input.GetKey("space"))
+
+        if (_coyoteTimeCounter < 0.01f)
+        {
+            _coyoteTimeCounter = 0f;
+        }
+
+        if (_jumped && _coyoteTimeCounter > 0f)
         {
             // Jump the player into the air and switch their state so they have properties of being in the air.
             thisObject.rb.velocity = new Vector2(thisObject.rb.velocity.x, 30.0f);
             thisObject.currentState = new JumpState();
-            thisObject.currentState.SetComponents(rb, renderer, currentState, groundCheck, groundCheckL, groundCheckR, _walkAccel, _jumpHeight, _airAccel);
+            _coyoteTimeCounter = 0f;
+            thisObject.currentState.SetComponents(rb, renderer, currentState, groundCheck, groundCheckL, groundCheckR, _walkAccel, _jumpHeight, _airAccel, _jumped, _coyoteTime, _coyoteTimeCounter);
         }
 
-        thisObject.rb.velocity = new Vector2(_walkSpeed, thisObject.rb.velocity.y);
+        if (thisObject.rb.velocity.y < -20f)
+        {
+            thisObject.rb.velocity = new Vector2(_walkSpeed, -20f);
+        }
+        else
+        {
+            thisObject.rb.velocity = new Vector2(_walkSpeed, thisObject.rb.velocity.y);
+        }
+        Debug.Log(_coyoteTimeCounter);
     }
 }
 
@@ -73,18 +127,24 @@ public class JumpState : PlayerStates
 {
     public override void handleInput(PlayerController thisObject)
     {
-        // If a linecast towards the ground sees the player is touching the loor, then they are grounded.
-        if (Physics2D.Linecast(thisObject.transform.position, thisObject.groundCheck.position, 1 << LayerMask.NameToLayer("Floor")) ||
-        Physics2D.Linecast(thisObject.transform.position, thisObject.groundCheckL.position, 1 << LayerMask.NameToLayer("Floor")) ||
-        Physics2D.Linecast(thisObject.transform.position, thisObject.groundCheckR.position, 1 << LayerMask.NameToLayer("Floor")))
+        if (isGrounded())
         {
             // If they are grounded, it switches back to running state, and the components have to be reassigned.
             thisObject.currentState = new RunningState();
-            thisObject.currentState.SetComponents(rb, renderer, currentState, groundCheck, groundCheckL, groundCheckR, _walkAccel, _jumpHeight, _airAccel);
+            // Stops constant jumping.
+            _jumped = false;
+            thisObject.currentState.SetComponents(rb, renderer, currentState, groundCheck, groundCheckL, groundCheckR, _walkAccel, _jumpHeight, _airAccel, _jumped, _coyoteTime, _coyoteTimeCounter);
         }
         // Do air movement, slightly faster than walk movement.
         else
         {
+            // If the player releases the jump button before the apex, they get a shorter total jump.
+            if (_jumped == false)
+            {
+                thisObject.rb.AddForce(thisObject.transform.up * -1 * 500);
+            }
+
+
             if (Input.GetKey("d") || Input.GetKey("right"))
             {
                 _airSpeed = _airAccel;
@@ -100,6 +160,11 @@ public class JumpState : PlayerStates
                 _airSpeed = 0.0f;
             }
         }
+        if (thisObject.rb.velocity.y < -20f)
+        {
+            thisObject.rb.velocity = new Vector2(_airSpeed, -20f);
+        }
+        
         thisObject.rb.velocity = new Vector2(_airSpeed, thisObject.rb.velocity.y);
     }
 }
@@ -114,6 +179,9 @@ public class PlayerController : MonoBehaviour
     public float _walkSpeed;
     public float _jumpHeight;
     public float _airSpeed;
+    public bool _jumped;
+    public float _coyoteTime;
+    public float _coyoteTimeCounter;
     // Grounded checking objects.
     public Transform groundCheck;
     public Transform groundCheckL;
@@ -129,12 +197,24 @@ public class PlayerController : MonoBehaviour
         // By default, the player is walking on the ground.
         currentState = new RunningState();
         // Uses the previously defined values and components to be useable within the player finite state machine.
-        currentState.SetComponents(rb, renderer, currentState, groundCheck, groundCheckL, groundCheckR, _walkSpeed, _jumpHeight, _airSpeed);
+        currentState.SetComponents(rb, renderer, currentState, groundCheck, groundCheckL, groundCheckR, _walkSpeed, _jumpHeight, _airSpeed, _jumped, _coyoteTime, _coyoteTimeCounter);
     }
 
     private void FixedUpdate()
     {
         // Input and all derivitive actions take place every frame.
         currentState.handleInput(this);
+    }
+
+    private void Update()
+    {
+        if (Input.GetKeyDown("space"))
+        {
+            currentState.SetJumped();
+        }
+        if (Input.GetKeyUp("space"))
+        {
+            currentState.ReleaseJump();
+        }
     }
 }
