@@ -89,12 +89,12 @@ public class RunningState : PlayerStates
         // Do walk movement.
         if (Input.GetKey("d") || Input.GetKey("right"))
         {
-            _walkSpeed = Mathf.MoveTowards(_walkSpeed, _walkAccel, 45f * Time.deltaTime);
+            _walkSpeed = _walkAccel;
             thisObject.renderer.flipX = false;
         }
         else if (Input.GetKey("a") || Input.GetKey("left"))
         {
-            _walkSpeed = Mathf.MoveTowards(_walkSpeed, -_walkAccel, 45f * Time.deltaTime);
+            _walkSpeed = -_walkAccel;
             thisObject.renderer.flipX = true;
         }
         else
@@ -118,10 +118,19 @@ public class RunningState : PlayerStates
             _walkSpeed = 0f;
             thisObject.currentState.SetComponents(rb, renderer, currentState, groundCheck, groundCheckL, groundCheckR, _walkAccel, _jumpHeight, _airAccel, _jumped, _coyoteTime, _coyoteTimeCounter, _jumpBufferTime, _jumpBufferTimeCounter);
         }
-        // Cap fall speed.
-        if (thisObject.rb.velocity.y < -20f)
+        if (_walkSpeed > _walkAccel)
         {
-            thisObject.rb.velocity = new Vector2(thisObject.rb.velocity.x, -20f);
+            _walkSpeed = _walkAccel;
+        }
+        if (_walkSpeed < -_walkAccel)
+        {
+            _walkSpeed = -_walkAccel;
+        }
+        
+        // Cap fall speed.
+        if (thisObject.rb.velocity.y < -25f)
+        {
+            thisObject.rb.velocity = new Vector2(thisObject.rb.velocity.x, -25f);
         }
         else
         {
@@ -138,14 +147,7 @@ public class JumpState : PlayerStates
         // If jump is pressed, if player is grounded within timeframe, then the jump will count, it is buffered.
         if (_jumped)
         {
-            if (isGrounded())
-            {
-                _jumpBufferTimeCounter = 0f;
-            }
-            else
-            {
-                _jumpBufferTimeCounter = _jumpBufferTime;
-            }
+            _jumpBufferTimeCounter = _jumpBufferTime;
         }
         else
         {
@@ -198,12 +200,12 @@ public class JumpState : PlayerStates
             // Air Movement.
             if (Input.GetKey("d") || Input.GetKey("right"))
             {
-                _airSpeed = Mathf.MoveTowards(_airSpeed, _airAccel, 1500f * Time.deltaTime);
+                _airSpeed = Mathf.MoveTowards(thisObject.rb.velocity.x, _airAccel, 300f * Time.deltaTime);
                 thisObject.renderer.flipX = false;
             }
             else if (Input.GetKey("a") || Input.GetKey("left"))
             {
-                _airSpeed = Mathf.MoveTowards(_airSpeed, -_airAccel, 1500f * Time.deltaTime);
+                _airSpeed = Mathf.MoveTowards(thisObject.rb.velocity.x, -_airAccel, 300f * Time.deltaTime);
                 thisObject.renderer.flipX = true;
             }
             else
@@ -212,9 +214,9 @@ public class JumpState : PlayerStates
             }
         }
         // Cap fall speed to 20 units.
-        if (thisObject.rb.velocity.y < -20f)
+        if (thisObject.rb.velocity.y < -25f)
         {
-            thisObject.rb.velocity = new Vector2(thisObject.rb.velocity.x, -20f);
+            thisObject.rb.velocity = new Vector2(_airSpeed, -25f);
         }
         else
         {
