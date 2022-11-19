@@ -85,6 +85,12 @@ public class RunningState : PlayerStates
         {
             _coyoteTimeCounter -= Time.deltaTime;
         }
+        // For sanity sake.
+        if (_coyoteTimeCounter < 0.01f)
+        {
+            _coyoteTimeCounter = 0f;
+            _jumped = false;
+        }
 
         // Do walk movement.
         if (Input.GetKey("d") || Input.GetKey("right"))
@@ -100,12 +106,6 @@ public class RunningState : PlayerStates
         else
         {
             _walkSpeed = Mathf.MoveTowards(thisObject.rb.velocity.x, 0, 45f * Time.deltaTime);
-        }
-
-        if (_coyoteTimeCounter < 0.01f)
-        {
-            _coyoteTimeCounter = 0f;
-            _jumped = false;
         }
 
         if (_jumped && _coyoteTimeCounter > 0f)
@@ -153,7 +153,6 @@ public class JumpState : PlayerStates
         {
             _jumpBufferTimeCounter -= Time.deltaTime;
         }
-        
         // For sanity sake.
         if (_jumpBufferTimeCounter < 0.01f)
         {
