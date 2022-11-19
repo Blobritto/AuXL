@@ -72,6 +72,7 @@ public class PlayerStates
     }
 };
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 public class RunningState : PlayerStates
 {
     public override void handleInput(PlayerController thisObject)
@@ -88,12 +89,12 @@ public class RunningState : PlayerStates
         // Do walk movement.
         if (Input.GetKey("d") || Input.GetKey("right"))
         {
-            _walkSpeed = _walkAccel;
+            _walkSpeed = Mathf.MoveTowards(_walkSpeed, _walkAccel, 45f * Time.deltaTime);
             thisObject.renderer.flipX = false;
         }
         else if (Input.GetKey("a") || Input.GetKey("left"))
         {
-            _walkSpeed = -_walkAccel;
+            _walkSpeed = Mathf.MoveTowards(_walkSpeed, -_walkAccel, 45f * Time.deltaTime);
             thisObject.renderer.flipX = true;
         }
         else
@@ -129,6 +130,7 @@ public class RunningState : PlayerStates
     }
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 public class JumpState : PlayerStates
 {
     public override void handleInput(PlayerController thisObject)
@@ -136,7 +138,14 @@ public class JumpState : PlayerStates
         // If jump is pressed, if player is grounded within timeframe, then the jump will count, it is buffered.
         if (_jumped)
         {
-            _jumpBufferTimeCounter = _jumpBufferTime;
+            if (isGrounded())
+            {
+                _jumpBufferTimeCounter = 0f;
+            }
+            else
+            {
+                _jumpBufferTimeCounter = _jumpBufferTime;
+            }
         }
         else
         {
@@ -189,12 +198,12 @@ public class JumpState : PlayerStates
             // Air Movement.
             if (Input.GetKey("d") || Input.GetKey("right"))
             {
-                _airSpeed = _airAccel;
+                _airSpeed = Mathf.MoveTowards(_airSpeed, _airAccel, 1500f * Time.deltaTime);
                 thisObject.renderer.flipX = false;
             }
             else if (Input.GetKey("a") || Input.GetKey("left"))
             {
-                _airSpeed = -_airAccel;
+                _airSpeed = Mathf.MoveTowards(_airSpeed, -_airAccel, 1500f * Time.deltaTime);
                 thisObject.renderer.flipX = true;
             }
             else
@@ -207,13 +216,15 @@ public class JumpState : PlayerStates
         {
             thisObject.rb.velocity = new Vector2(thisObject.rb.velocity.x, -20f);
         }
-
-
-        // Move through the air.
-        thisObject.rb.velocity = new Vector2(_airSpeed, thisObject.rb.velocity.y);
+        else
+        {
+            // Move through the air.
+            thisObject.rb.velocity = new Vector2(_airSpeed, thisObject.rb.velocity.y);
+        }
     }
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 public class PlayerController : MonoBehaviour
 {
     // Global fields to parse into the player variables.
