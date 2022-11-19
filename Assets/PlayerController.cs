@@ -72,6 +72,7 @@ public class PlayerStates
     }
 };
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 public class RunningState : PlayerStates
 {
     public override void handleInput(PlayerController thisObject)
@@ -83,6 +84,12 @@ public class RunningState : PlayerStates
         else
         {
             _coyoteTimeCounter -= Time.deltaTime;
+        }
+        // For sanity sake.
+        if (_coyoteTimeCounter < 0.01f)
+        {
+            _coyoteTimeCounter = 0f;
+            _jumped = false;
         }
 
         // Do walk movement.
@@ -101,12 +108,6 @@ public class RunningState : PlayerStates
             _walkSpeed = Mathf.MoveTowards(thisObject.rb.velocity.x, 0, 45f * Time.deltaTime);
         }
 
-        if (_coyoteTimeCounter < 0.01f)
-        {
-            _coyoteTimeCounter = 0f;
-            _jumped = false;
-        }
-
         if (_jumped && _coyoteTimeCounter > 0f)
         {
             // Jump the player into the air and switch their state so they have properties of being in the air.
@@ -117,10 +118,19 @@ public class RunningState : PlayerStates
             _walkSpeed = 0f;
             thisObject.currentState.SetComponents(rb, renderer, currentState, groundCheck, groundCheckL, groundCheckR, _walkAccel, _jumpHeight, _airAccel, _jumped, _coyoteTime, _coyoteTimeCounter, _jumpBufferTime, _jumpBufferTimeCounter);
         }
-        // Cap fall speed.
-        if (thisObject.rb.velocity.y < -20f)
+        if (_walkSpeed > _walkAccel)
         {
-            thisObject.rb.velocity = new Vector2(thisObject.rb.velocity.x, -20f);
+            _walkSpeed = _walkAccel;
+        }
+        if (_walkSpeed < -_walkAccel)
+        {
+            _walkSpeed = -_walkAccel;
+        }
+        
+        // Cap fall speed.
+        if (thisObject.rb.velocity.y < -25f)
+        {
+            thisObject.rb.velocity = new Vector2(thisObject.rb.velocity.x, -25f);
         }
         else
         {
@@ -129,6 +139,7 @@ public class RunningState : PlayerStates
     }
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 public class JumpState : PlayerStates
 {
     public override void handleInput(PlayerController thisObject)
@@ -142,7 +153,6 @@ public class JumpState : PlayerStates
         {
             _jumpBufferTimeCounter -= Time.deltaTime;
         }
-        
         // For sanity sake.
         if (_jumpBufferTimeCounter < 0.01f)
         {
@@ -189,12 +199,12 @@ public class JumpState : PlayerStates
             // Air Movement.
             if (Input.GetKey("d") || Input.GetKey("right"))
             {
-                _airSpeed = _airAccel;
+                _airSpeed = Mathf.MoveTowards(thisObject.rb.velocity.x, _airAccel, 300f * Time.deltaTime);
                 thisObject.renderer.flipX = false;
             }
             else if (Input.GetKey("a") || Input.GetKey("left"))
             {
-                _airSpeed = -_airAccel;
+                _airSpeed = Mathf.MoveTowards(thisObject.rb.velocity.x, -_airAccel, 300f * Time.deltaTime);
                 thisObject.renderer.flipX = true;
             }
             else
@@ -203,17 +213,19 @@ public class JumpState : PlayerStates
             }
         }
         // Cap fall speed to 20 units.
-        if (thisObject.rb.velocity.y < -20f)
+        if (thisObject.rb.velocity.y < -25f)
         {
-            thisObject.rb.velocity = new Vector2(thisObject.rb.velocity.x, -20f);
+            thisObject.rb.velocity = new Vector2(_airSpeed, -25f);
         }
-
-
-        // Move through the air.
-        thisObject.rb.velocity = new Vector2(_airSpeed, thisObject.rb.velocity.y);
+        else
+        {
+            // Move through the air.
+            thisObject.rb.velocity = new Vector2(_airSpeed, thisObject.rb.velocity.y);
+        }
     }
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 public class PlayerController : MonoBehaviour
 {
     // Global fields to parse into the player variables.
