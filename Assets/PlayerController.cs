@@ -98,7 +98,7 @@ public class RunningState : PlayerStates
         }
         else
         {
-            _walkSpeed = 0.0f;
+            _walkSpeed = Mathf.MoveTowards(thisObject.rb.velocity.x, 0, 45f * Time.deltaTime);
         }
 
         if (_coyoteTimeCounter < 0.01f)
@@ -114,12 +114,13 @@ public class RunningState : PlayerStates
             thisObject.currentState = new JumpState();
             _coyoteTimeCounter = 0f;
             _jumpBufferTimeCounter = 0f;
+            _walkSpeed = 0f;
             thisObject.currentState.SetComponents(rb, renderer, currentState, groundCheck, groundCheckL, groundCheckR, _walkAccel, _jumpHeight, _airAccel, _jumped, _coyoteTime, _coyoteTimeCounter, _jumpBufferTime, _jumpBufferTimeCounter);
         }
-
+        // Cap fall speed.
         if (thisObject.rb.velocity.y < -20f)
         {
-            thisObject.rb.velocity = new Vector2(_walkSpeed, -20f);
+            thisObject.rb.velocity = new Vector2(thisObject.rb.velocity.x, -20f);
         }
         else
         {
@@ -132,8 +133,7 @@ public class JumpState : PlayerStates
 {
     public override void handleInput(PlayerController thisObject)
     {
-        Debug.Log(_jumpBufferTimeCounter);
-
+        // If jump is pressed, if player is grounded within timeframe, then the jump will count, it is buffered.
         if (_jumped)
         {
             _jumpBufferTimeCounter = _jumpBufferTime;
@@ -142,15 +142,18 @@ public class JumpState : PlayerStates
         {
             _jumpBufferTimeCounter -= Time.deltaTime;
         }
+        
+        // For sanity sake.
         if (_jumpBufferTimeCounter < 0.01f)
         {
             _jumpBufferTimeCounter = 0f;
         }
-        if (thisObject.rb.velocity.y < 0)
+        
+        // If falling, then not jumping.
+        if (thisObject.rb.velocity.y < 0f)
         {
             _jumped = false;
         }
-
 
         if (isGrounded())
         {
@@ -196,15 +199,16 @@ public class JumpState : PlayerStates
             }
             else
             {
-                _airSpeed = 0.0f;
+                _airSpeed = Mathf.MoveTowards(thisObject.rb.velocity.x, 0, 45f * Time.deltaTime);
             }
         }
         // Cap fall speed to 20 units.
         if (thisObject.rb.velocity.y < -20f)
         {
-            thisObject.rb.velocity = new Vector2(_airSpeed, -20f);
+            thisObject.rb.velocity = new Vector2(thisObject.rb.velocity.x, -20f);
         }
-        
+
+
         // Move through the air.
         thisObject.rb.velocity = new Vector2(_airSpeed, thisObject.rb.velocity.y);
     }

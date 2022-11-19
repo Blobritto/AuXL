@@ -580,7 +580,7 @@ MonoBehaviour:
   _jumped: 0
   _coyoteTime: 0.15
   _coyoteTimeCounter: 0
-  _jumpBufferTime: 0.2
+  _jumpBufferTime: 0.1
   _jumpBufferTimeCounter: 0
   groundCheck: {fileID: 1104039727}
   groundCheckL: {fileID: 1392159778}
@@ -601,7 +601,7 @@ Rigidbody2D:
   m_LinearDrag: 0
   m_AngularDrag: 0.05
   m_GravityScale: 7
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 6200000, guid: e016f4a84e0c5254e8210804e9b31802, type: 2}
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 0
