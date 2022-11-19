@@ -16,6 +16,8 @@ public class PlayerStates
     [SerializeField] protected bool _jumped;
     [SerializeField] protected float _coyoteTime;
     [SerializeField] protected float _coyoteTimeCounter;
+    [SerializeField] protected float _jumpBufferTime;
+    [SerializeField] protected float _jumpBufferTimeCounter;
     [SerializeField] protected Transform groundCheck;
     [SerializeField] protected Transform groundCheckL;
     [SerializeField] protected Transform groundCheckR;
@@ -24,7 +26,7 @@ public class PlayerStates
     public virtual void handleInput(PlayerController thisObject) { }
 
     // Set all of the variables referenced within the player class.
-    public void SetComponents(Rigidbody2D _rb, SpriteRenderer _renderer, PlayerStates _currentState, Transform _groundCheck, Transform _groundCheckL, Transform _groundCheckR, float __walkSpeed, float __jumpHeight, float __airSpeed, bool __jumped, float __coyoteTime, float __coyoteTimeCounter)
+    public void SetComponents(Rigidbody2D _rb, SpriteRenderer _renderer, PlayerStates _currentState, Transform _groundCheck, Transform _groundCheckL, Transform _groundCheckR, float __walkSpeed, float __jumpHeight, float __airSpeed, bool __jumped, float __coyoteTime, float __coyoteTimeCounter, float __jumpBufferTime, float __jumpBufferTimeCounter)
     {
         rb = _rb;
         renderer = _renderer;
@@ -40,6 +42,8 @@ public class PlayerStates
         _jumped = __jumped;
         _coyoteTime = __coyoteTime;
         _coyoteTimeCounter = __coyoteTimeCounter;
+        _jumpBufferTime = __jumpBufferTime;
+        _jumpBufferTimeCounter = __jumpBufferTimeCounter;
     }
 
     public void SetJumped()
@@ -100,15 +104,17 @@ public class RunningState : PlayerStates
         if (_coyoteTimeCounter < 0.01f)
         {
             _coyoteTimeCounter = 0f;
+            _jumped = false;
         }
 
         if (_jumped && _coyoteTimeCounter > 0f)
         {
             // Jump the player into the air and switch their state so they have properties of being in the air.
-            thisObject.rb.velocity = new Vector2(thisObject.rb.velocity.x, 30.0f);
+            thisObject.rb.velocity = new Vector2(thisObject.rb.velocity.x, _jumpHeight);
             thisObject.currentState = new JumpState();
             _coyoteTimeCounter = 0f;
-            thisObject.currentState.SetComponents(rb, renderer, currentState, groundCheck, groundCheckL, groundCheckR, _walkAccel, _jumpHeight, _airAccel, _jumped, _coyoteTime, _coyoteTimeCounter);
+            _jumpBufferTimeCounter = 0f;
+            thisObject.currentState.SetComponents(rb, renderer, currentState, groundCheck, groundCheckL, groundCheckR, _walkAccel, _jumpHeight, _airAccel, _jumped, _coyoteTime, _coyoteTimeCounter, _jumpBufferTime, _jumpBufferTimeCounter);
         }
 
         if (thisObject.rb.velocity.y < -20f)
@@ -119,7 +125,6 @@ public class RunningState : PlayerStates
         {
             thisObject.rb.velocity = new Vector2(_walkSpeed, thisObject.rb.velocity.y);
         }
-        Debug.Log(_coyoteTimeCounter);
     }
 }
 
@@ -127,13 +132,47 @@ public class JumpState : PlayerStates
 {
     public override void handleInput(PlayerController thisObject)
     {
+        Debug.Log(_jumpBufferTimeCounter);
+
+        if (_jumped)
+        {
+            _jumpBufferTimeCounter = _jumpBufferTime;
+        }
+        else
+        {
+            _jumpBufferTimeCounter -= Time.deltaTime;
+        }
+        if (_jumpBufferTimeCounter < 0.01f)
+        {
+            _jumpBufferTimeCounter = 0f;
+        }
+        if (thisObject.rb.velocity.y < 0)
+        {
+            _jumped = false;
+        }
+
+
         if (isGrounded())
         {
-            // If they are grounded, it switches back to running state, and the components have to be reassigned.
-            thisObject.currentState = new RunningState();
-            // Stops constant jumping.
-            _jumped = false;
-            thisObject.currentState.SetComponents(rb, renderer, currentState, groundCheck, groundCheckL, groundCheckR, _walkAccel, _jumpHeight, _airAccel, _jumped, _coyoteTime, _coyoteTimeCounter);
+            // If jumping immediately upon landing, there is no reason to switch back into running state.
+            if (_jumpBufferTimeCounter > 0f)
+            {
+                thisObject.rb.velocity = new Vector2(thisObject.rb.velocity.x, _jumpHeight);
+                _jumpBufferTimeCounter = 0f;
+               // If Input key was released before landing within buffer time, a full jump would happen, this checks if the key is still held down, and if not, small jump occurs.
+               if (Input.GetKey("space"))
+               {
+                    _jumped = true;
+               }
+            }
+            else
+            {
+                // If they are grounded, it switches back to running state, and the components have to be reassigned.
+                thisObject.currentState = new RunningState();
+                // Stops constant jumping.
+                _jumped = false;
+                thisObject.currentState.SetComponents(rb, renderer, currentState, groundCheck, groundCheckL, groundCheckR, _walkAccel, _jumpHeight, _airAccel, _jumped, _coyoteTime, _coyoteTimeCounter, _jumpBufferTime, _jumpBufferTimeCounter);
+            }
         }
         // Do air movement, slightly faster than walk movement.
         else
@@ -144,7 +183,7 @@ public class JumpState : PlayerStates
                 thisObject.rb.AddForce(thisObject.transform.up * -1 * 500);
             }
 
-
+            // Air Movement.
             if (Input.GetKey("d") || Input.GetKey("right"))
             {
                 _airSpeed = _airAccel;
@@ -160,11 +199,13 @@ public class JumpState : PlayerStates
                 _airSpeed = 0.0f;
             }
         }
+        // Cap fall speed to 20 units.
         if (thisObject.rb.velocity.y < -20f)
         {
             thisObject.rb.velocity = new Vector2(_airSpeed, -20f);
         }
         
+        // Move through the air.
         thisObject.rb.velocity = new Vector2(_airSpeed, thisObject.rb.velocity.y);
     }
 }
@@ -182,6 +223,8 @@ public class PlayerController : MonoBehaviour
     public bool _jumped;
     public float _coyoteTime;
     public float _coyoteTimeCounter;
+    public float _jumpBufferTime;
+    public float _jumpBufferTimeCounter;
     // Grounded checking objects.
     public Transform groundCheck;
     public Transform groundCheckL;
@@ -197,7 +240,7 @@ public class PlayerController : MonoBehaviour
         // By default, the player is walking on the ground.
         currentState = new RunningState();
         // Uses the previously defined values and components to be useable within the player finite state machine.
-        currentState.SetComponents(rb, renderer, currentState, groundCheck, groundCheckL, groundCheckR, _walkSpeed, _jumpHeight, _airSpeed, _jumped, _coyoteTime, _coyoteTimeCounter);
+        currentState.SetComponents(rb, renderer, currentState, groundCheck, groundCheckL, groundCheckR, _walkSpeed, _jumpHeight, _airSpeed, _jumped, _coyoteTime, _coyoteTimeCounter, _jumpBufferTime, _jumpBufferTimeCounter);
     }
 
     private void FixedUpdate()
