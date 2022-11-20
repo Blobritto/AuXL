@@ -8,9 +8,9 @@ public class CoinTestScript : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        rb = GetComponent<Rigidbody2D>();
-        rb.velocity = new Vector2(20, 20);
-        rb.angularVelocity = -1000f;
+        //rb = GetComponent<Rigidbody2D>();
+        //rb.velocity = new Vector2(20, 20);
+        //rb.angularVelocity = -1000f;
     }
 
     // Update is called once per frame

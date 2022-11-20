@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PlayerStates : MonoBehaviour 
+public class PlayerStates
 {
     // Make sure these are protected so they can be accessed by child classes.
     [SerializeField] protected Rigidbody2D rb;
@@ -197,7 +197,7 @@ public class ThrowState : PlayerStates
         Vector2 dir = mouseWorldPosition - new Vector2(thisObject.transform.position.x, thisObject.transform.position.y);
         float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
         Vector2 knockback = Quaternion.AngleAxis(angle, Vector3.forward) * Vector3.right;
-        Debug.Log(knockback);
+        Vector3 knockback3 = new Vector3(knockback.x, knockback.y, 0);
 
         if (_cthrow)
         {
@@ -206,11 +206,21 @@ public class ThrowState : PlayerStates
                 knockback = new Vector2(knockback.x, knockback.y / 2);
             }
             thisObject.rb.velocity = knockback * -50;
+            
             _cthrow = false;
             _jumped = false;
 
-            Instantiate(coin, thisObject.rb.transform.position, Quaternion.identity);
-
+            coin = Object.Instantiate(coin, thisObject.rb.transform.position + (knockback3), Quaternion.identity);
+            coin.GetComponent<Rigidbody2D>().velocity = knockback * 30;
+            
+            if (knockback.x > 0)
+            {
+                coin.GetComponent<Rigidbody2D>().angularVelocity = -1000f;
+            }
+            else
+            {
+                coin.GetComponent<Rigidbody2D>().angularVelocity = 1000f;
+            }
         }
 
         if (isGrounded())
@@ -360,5 +370,12 @@ public class PlayerController : MonoBehaviour
         {
             currentState.CoinThrown();
         }
+
+    }
+
+    void OnTriggerEnter2D(Collider2D col)
+    {
+        //GameObject.Destroy(col.gameObject);
+        Debug.Log("Destroy");
     }
 }
