@@ -21,12 +21,14 @@ public class PlayerStates
     [SerializeField] protected Transform groundCheck;
     [SerializeField] protected Transform groundCheckL;
     [SerializeField] protected Transform groundCheckR;
+    [SerializeField] protected Transform coin;
+    [SerializeField] protected bool _cthrow;
     [SerializeField] protected PlayerStates currentState;
 
     public virtual void handleInput(PlayerController thisObject) { }
 
     // Set all of the variables referenced within the player class.
-    public void SetComponents(Rigidbody2D _rb, SpriteRenderer _renderer, PlayerStates _currentState, Transform _groundCheck, Transform _groundCheckL, Transform _groundCheckR, float __walkSpeed, float __jumpHeight, float __airSpeed, bool __jumped, float __coyoteTime, float __coyoteTimeCounter, float __jumpBufferTime, float __jumpBufferTimeCounter, bool __jumpReset)
+    public void SetComponents(Rigidbody2D _rb, SpriteRenderer _renderer, PlayerStates _currentState, Transform _groundCheck, Transform _groundCheckL, Transform _groundCheckR, float __walkSpeed, float __jumpHeight, float __airSpeed, bool __jumped, float __coyoteTime, float __coyoteTimeCounter, float __jumpBufferTime, float __jumpBufferTimeCounter, bool __jumpReset, Transform _coin, bool __cthrow)
     {
         rb = _rb;
         renderer = _renderer;
@@ -45,6 +47,8 @@ public class PlayerStates
         _coyoteTimeCounter = __coyoteTimeCounter;
         _jumpBufferTime = __jumpBufferTime;
         _jumpBufferTimeCounter = __jumpBufferTimeCounter;
+        coin = _coin;
+        _cthrow = __cthrow;
     }
 
     public void SetJumped()
@@ -56,6 +60,11 @@ public class PlayerStates
     {
         _jumped = false;
         _jumpReset = true;
+    }
+
+    public void CoinThrown()
+    {
+        _cthrow = true;
     }
 
     public bool isGrounded()
@@ -73,6 +82,9 @@ public class PlayerStates
         }
     }
 };
+
+
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 public class RunningState : PlayerStates
 {
@@ -108,6 +120,11 @@ public class RunningState : PlayerStates
         {
             _walkSpeed = Mathf.MoveTowards(thisObject.rb.velocity.x, 0, 45f * Time.deltaTime);
         }
+        if (_cthrow)
+        {
+            thisObject.currentState = new ThrowState();
+            thisObject.currentState.SetComponents(rb, renderer, currentState, groundCheck, groundCheckL, groundCheckR, _walkAccel, _jumpHeight, _airAccel, _jumped, _coyoteTime, _coyoteTimeCounter, _jumpBufferTime, _jumpBufferTimeCounter, _jumpReset, coin, _cthrow);
+        }
 
         if (_jumped && _coyoteTimeCounter > 0f)
         {
@@ -118,7 +135,7 @@ public class RunningState : PlayerStates
             _jumpBufferTimeCounter = 0f;
             _walkSpeed = 0f;
             _jumpReset = false;
-            thisObject.currentState.SetComponents(rb, renderer, currentState, groundCheck, groundCheckL, groundCheckR, _walkAccel, _jumpHeight, _airAccel, _jumped, _coyoteTime, _coyoteTimeCounter, _jumpBufferTime, _jumpBufferTimeCounter, _jumpReset);
+            thisObject.currentState.SetComponents(rb, renderer, currentState, groundCheck, groundCheckL, groundCheckR, _walkAccel, _jumpHeight, _airAccel, _jumped, _coyoteTime, _coyoteTimeCounter, _jumpBufferTime, _jumpBufferTimeCounter, _jumpReset, coin, _cthrow);
         }
         if (_walkSpeed > _walkAccel)
         {
@@ -140,6 +157,47 @@ public class RunningState : PlayerStates
         }
     }
 }
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+public class ThrowState : PlayerStates
+{
+    public override void handleInput(PlayerController thisObject)
+    {
+        Vector2 mousePosition = new Vector2(Input.mousePosition.x, Input.mousePosition.y);
+        Vector2 mouseWorldPosition = Camera.main.ScreenToWorldPoint(mousePosition);
+        Vector2 dir = mouseWorldPosition - new Vector2(thisObject.transform.position.x, thisObject.transform.position.y);
+        float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
+        Vector2 knockback = Quaternion.AngleAxis(angle, Vector3.forward) * Vector3.right;
+        Debug.Log(knockback);
+
+        if (_cthrow)
+        {
+            if (isGrounded())
+            {
+                knockback = new Vector2(knockback.x, knockback.y / 2);
+            }
+            thisObject.rb.velocity = knockback * -50;
+            _cthrow = false;
+            _jumped = false;
+        }
+
+        if (isGrounded())
+        {
+            thisObject.currentState = new RunningState();
+            thisObject.currentState.SetComponents(rb, renderer, currentState, groundCheck, groundCheckL, groundCheckR, _walkAccel, _jumpHeight, _airAccel, _jumped, _coyoteTime, _coyoteTimeCounter, _jumpBufferTime, _jumpBufferTimeCounter, _jumpReset, coin, _cthrow);
+        }
+        else
+        {
+            thisObject.currentState = new JumpState();
+            thisObject.currentState.SetComponents(rb, renderer, currentState, groundCheck, groundCheckL, groundCheckR, _walkAccel, _jumpHeight, _airAccel, _jumped, _coyoteTime, _coyoteTimeCounter, _jumpBufferTime, _jumpBufferTimeCounter, _jumpReset, coin, _cthrow);
+        }
+    }
+}
+
+
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 public class JumpState : PlayerStates
 {
@@ -191,7 +249,7 @@ public class JumpState : PlayerStates
                 // Stops constant jumping.
                 _jumped = false;
                 _jumpReset = false;
-                thisObject.currentState.SetComponents(rb, renderer, currentState, groundCheck, groundCheckL, groundCheckR, _walkAccel, _jumpHeight, _airAccel, _jumped, _coyoteTime, _coyoteTimeCounter, _jumpBufferTime, _jumpBufferTimeCounter, _jumpReset);
+                thisObject.currentState.SetComponents(rb, renderer, currentState, groundCheck, groundCheckL, groundCheckR, _walkAccel, _jumpHeight, _airAccel, _jumped, _coyoteTime, _coyoteTimeCounter, _jumpBufferTime, _jumpBufferTimeCounter, _jumpReset, coin, _cthrow);
             }
         }
         // Do air movement, slightly faster than walk movement.
@@ -218,6 +276,11 @@ public class JumpState : PlayerStates
             {
                 _airSpeed = Mathf.MoveTowards(thisObject.rb.velocity.x, 0, 45f * Time.deltaTime);
             }
+            if (_cthrow)
+            {
+                thisObject.currentState = new ThrowState();
+                thisObject.currentState.SetComponents(rb, renderer, currentState, groundCheck, groundCheckL, groundCheckR, _walkAccel, _jumpHeight, _airAccel, _jumped, _coyoteTime, _coyoteTimeCounter, _jumpBufferTime, _jumpBufferTimeCounter, _jumpReset, coin, _cthrow);
+            }
         }
         // Cap fall speed to 20 units.
         if (thisObject.rb.velocity.y < -35f)
@@ -231,6 +294,9 @@ public class JumpState : PlayerStates
         }
     }
 }
+
+
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 public class PlayerController : MonoBehaviour
 {
@@ -252,6 +318,9 @@ public class PlayerController : MonoBehaviour
     public Transform groundCheck;
     public Transform groundCheckL;
     public Transform groundCheckR;
+    // Coin.
+    public Transform coin;
+    public bool _cthrow;
     // The player itself
     public PlayerStates currentState;
 
@@ -263,7 +332,7 @@ public class PlayerController : MonoBehaviour
         // By default, the player is walking on the ground.
         currentState = new RunningState();
         // Uses the previously defined values and components to be useable within the player finite state machine.
-        currentState.SetComponents(rb, renderer, currentState, groundCheck, groundCheckL, groundCheckR, _walkSpeed, _jumpHeight, _airSpeed, _jumped, _coyoteTime, _coyoteTimeCounter, _jumpBufferTime, _jumpBufferTimeCounter, _jumpReset);
+        currentState.SetComponents(rb, renderer, currentState, groundCheck, groundCheckL, groundCheckR, _walkSpeed, _jumpHeight, _airSpeed, _jumped, _coyoteTime, _coyoteTimeCounter, _jumpBufferTime, _jumpBufferTimeCounter, _jumpReset, coin , _cthrow);
     }
 
     private void FixedUpdate()
@@ -281,6 +350,10 @@ public class PlayerController : MonoBehaviour
         if (Input.GetKeyUp("space"))
         {
             currentState.ReleaseJump();
+        }
+        if (Input.GetMouseButtonDown(0))
+        {
+            currentState.CoinThrown();
         }
     }
 }
