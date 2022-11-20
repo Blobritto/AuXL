@@ -81,6 +81,60 @@ public class PlayerStates
             return false;
         }
     }
+    
+    // Do walk movement.
+    public void Move(float speed, float accel, float drag, int state, bool _cthrow)
+    {
+        // Horizontal movement
+        if (Input.GetKey("d") || Input.GetKey("right"))
+        {
+            if (state == 1)
+            {
+                speed = accel;
+            }
+            else if (state == 2)
+            {
+                speed = Mathf.MoveTowards(rb.velocity.x, accel, drag * Time.deltaTime);
+            }
+            renderer.flipX = false;
+        }
+        else if (Input.GetKey("a") || Input.GetKey("left"))
+        {
+            if (state == 1)
+            {
+                speed = -accel;
+            }
+            else if (state == 2)
+            {
+                speed = Mathf.MoveTowards(rb.velocity.x, -accel, drag * Time.deltaTime);
+            }
+            renderer.flipX = true;
+        }
+        else
+        {
+            speed = Mathf.MoveTowards(rb.velocity.x, 0, 45f * Time.deltaTime);
+        }
+
+        // Capping something or other.
+        if (speed > accel)
+        {
+            speed = accel;
+        }
+        if (speed < -accel)
+        {
+            speed = -accel;
+        }
+
+        // Cap fall speed.
+        if (rb.velocity.y < -35f)
+        {
+            rb.velocity = new Vector2(speed, -35f);
+        }
+        else
+        {
+            rb.velocity = new Vector2(speed, rb.velocity.y);
+        }
+    }
 };
 
 
@@ -98,6 +152,7 @@ public class RunningState : PlayerStates
         {
             _coyoteTimeCounter -= Time.deltaTime;
         }
+        
         // For sanity sake.
         if (_coyoteTimeCounter < 0.01f)
         {
@@ -105,26 +160,8 @@ public class RunningState : PlayerStates
             _jumped = false;
         }
 
-        // Do walk movement.
-        if (Input.GetKey("d") || Input.GetKey("right"))
-        {
-            _walkSpeed = _walkAccel;
-            thisObject.renderer.flipX = false;
-        }
-        else if (Input.GetKey("a") || Input.GetKey("left"))
-        {
-            _walkSpeed = -_walkAccel;
-            thisObject.renderer.flipX = true;
-        }
-        else
-        {
-            _walkSpeed = Mathf.MoveTowards(thisObject.rb.velocity.x, 0, 45f * Time.deltaTime);
-        }
-        if (_cthrow)
-        {
-            thisObject.currentState = new ThrowState();
-            thisObject.currentState.SetComponents(rb, renderer, currentState, groundCheck, groundCheckL, groundCheckR, _walkAccel, _jumpHeight, _airAccel, _jumped, _coyoteTime, _coyoteTimeCounter, _jumpBufferTime, _jumpBufferTimeCounter, _jumpReset, coin, _cthrow);
-        }
+        // Move the player horizontally.
+        Move(_walkSpeed, _walkAccel, 45f, 1, _cthrow);
 
         if (_jumped && _coyoteTimeCounter > 0f)
         {
@@ -137,23 +174,12 @@ public class RunningState : PlayerStates
             _jumpReset = false;
             thisObject.currentState.SetComponents(rb, renderer, currentState, groundCheck, groundCheckL, groundCheckR, _walkAccel, _jumpHeight, _airAccel, _jumped, _coyoteTime, _coyoteTimeCounter, _jumpBufferTime, _jumpBufferTimeCounter, _jumpReset, coin, _cthrow);
         }
-        if (_walkSpeed > _walkAccel)
+
+        // If the left mouse button is clicked / coin is thrown.
+        if (_cthrow)
         {
-            _walkSpeed = _walkAccel;
-        }
-        if (_walkSpeed < -_walkAccel)
-        {
-            _walkSpeed = -_walkAccel;
-        }
-        
-        // Cap fall speed.
-        if (thisObject.rb.velocity.y < -35f)
-        {
-            thisObject.rb.velocity = new Vector2(thisObject.rb.velocity.x, -35f);
-        }
-        else
-        {
-            thisObject.rb.velocity = new Vector2(_walkSpeed, thisObject.rb.velocity.y);
+            thisObject.currentState = new ThrowState();
+            thisObject.currentState.SetComponents(rb, renderer, currentState, groundCheck, groundCheckL, groundCheckR, _walkAccel, _jumpHeight, _airAccel, _jumped, _coyoteTime, _coyoteTimeCounter, _jumpBufferTime, _jumpBufferTimeCounter, _jumpReset, coin, _cthrow);
         }
     }
 }
@@ -261,36 +287,15 @@ public class JumpState : PlayerStates
                 thisObject.rb.AddForce(thisObject.transform.up * -1 * 500);
             }
 
-            // Air Movement.
-            if (Input.GetKey("d") || Input.GetKey("right"))
-            {
-                _airSpeed = Mathf.MoveTowards(thisObject.rb.velocity.x, _airAccel, 300f * Time.deltaTime);
-                thisObject.renderer.flipX = false;
-            }
-            else if (Input.GetKey("a") || Input.GetKey("left"))
-            {
-                _airSpeed = Mathf.MoveTowards(thisObject.rb.velocity.x, -_airAccel, 300f * Time.deltaTime);
-                thisObject.renderer.flipX = true;
-            }
-            else
-            {
-                _airSpeed = Mathf.MoveTowards(thisObject.rb.velocity.x, 0, 45f * Time.deltaTime);
-            }
+            // Moves the player horizontally.
+            Move(_airSpeed, _airAccel, 300f, 2, _cthrow);
+
+            // If the left mouse button is clicked / coin is thrown.
             if (_cthrow)
             {
                 thisObject.currentState = new ThrowState();
                 thisObject.currentState.SetComponents(rb, renderer, currentState, groundCheck, groundCheckL, groundCheckR, _walkAccel, _jumpHeight, _airAccel, _jumped, _coyoteTime, _coyoteTimeCounter, _jumpBufferTime, _jumpBufferTimeCounter, _jumpReset, coin, _cthrow);
             }
-        }
-        // Cap fall speed to 20 units.
-        if (thisObject.rb.velocity.y < -35f)
-        {
-            thisObject.rb.velocity = new Vector2(_airSpeed, -35f);
-        }
-        else
-        {
-            // Move through the air.
-            thisObject.rb.velocity = new Vector2(_airSpeed, thisObject.rb.velocity.y);
         }
     }
 }
