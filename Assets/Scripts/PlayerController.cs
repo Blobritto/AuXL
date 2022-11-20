@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PlayerStates 
+public class PlayerStates : MonoBehaviour 
 {
     // Make sure these are protected so they can be accessed by child classes.
     [SerializeField] protected Rigidbody2D rb;
@@ -21,36 +21,41 @@ public class PlayerStates
     [SerializeField] protected Transform groundCheck;
     [SerializeField] protected Transform groundCheckL;
     [SerializeField] protected Transform groundCheckR;
-    [SerializeField] protected Transform coin;
+    [SerializeField] protected GameObject coin;
     [SerializeField] protected bool _cthrow;
     [SerializeField] protected PlayerStates currentState;
 
     public virtual void handleInput(PlayerController thisObject) { }
 
     // Set all of the variables referenced within the player class.
-    public void SetComponents(Rigidbody2D _rb, SpriteRenderer _renderer, PlayerStates _currentState, Transform _groundCheck, Transform _groundCheckL, Transform _groundCheckR, float __walkSpeed, float __jumpHeight, float __airSpeed, bool __jumped, float __coyoteTime, float __coyoteTimeCounter, float __jumpBufferTime, float __jumpBufferTimeCounter, bool __jumpReset, Transform _coin, bool __cthrow)
+    public void SetComponents(Rigidbody2D _rb, SpriteRenderer _renderer, PlayerStates _currentState, Transform _groundCheck, Transform _groundCheckL, Transform _groundCheckR, float __walkSpeed, float __jumpHeight, float __airSpeed, bool __jumped, float __coyoteTime, float __coyoteTimeCounter, float __jumpBufferTime, float __jumpBufferTimeCounter, bool __jumpReset, GameObject _coin, bool __cthrow)
     {
         rb = _rb;
         renderer = _renderer;
         currentState = _currentState;
+        coin = _coin;
+        _cthrow = __cthrow;
+
         _walkSpeed = __walkSpeed;
         _walkAccel = __walkSpeed;
-        _jumpHeight = __jumpHeight;
         _airSpeed = __airSpeed;
         _airAccel = __airSpeed;
+        
         groundCheck = _groundCheck;
         groundCheckL = _groundCheckL;
         groundCheckR = _groundCheckR;
+        
         _jumped = __jumped;
+        _jumpHeight = __jumpHeight;
         _jumpReset = __jumpReset;
         _coyoteTime = __coyoteTime;
         _coyoteTimeCounter = __coyoteTimeCounter;
         _jumpBufferTime = __jumpBufferTime;
         _jumpBufferTimeCounter = __jumpBufferTimeCounter;
-        coin = _coin;
-        _cthrow = __cthrow;
     }
 
+    
+    // Utilises the speed of the update function inside the rigidity of fixed update.
     public void SetJumped()
     {
         _jumped = true;
@@ -67,9 +72,9 @@ public class PlayerStates
         _cthrow = true;
     }
 
+    // If a linecast towards the ground sees the player is touching the floor, then they are grounded.
     public bool isGrounded()
     {
-        // If a linecast towards the ground sees the player is touching the floor, then they are grounded.
         if (Physics2D.Linecast(rb.transform.position, groundCheck.position, 1 << LayerMask.NameToLayer("Floor")) ||
         Physics2D.Linecast(rb.transform.position, groundCheckL.position, 1 << LayerMask.NameToLayer("Floor")) ||
         Physics2D.Linecast(rb.transform.position, groundCheckR.position, 1 << LayerMask.NameToLayer("Floor")))
@@ -136,9 +141,7 @@ public class PlayerStates
         }
     }
 };
-
-
-
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 public class RunningState : PlayerStates
 {
@@ -183,9 +186,7 @@ public class RunningState : PlayerStates
         }
     }
 }
-
-
-
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 public class ThrowState : PlayerStates
 {
@@ -207,6 +208,9 @@ public class ThrowState : PlayerStates
             thisObject.rb.velocity = knockback * -50;
             _cthrow = false;
             _jumped = false;
+
+            Instantiate(coin, thisObject.rb.transform.position, Quaternion.identity);
+
         }
 
         if (isGrounded())
@@ -221,9 +225,7 @@ public class ThrowState : PlayerStates
         }
     }
 }
-
-
-
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 public class JumpState : PlayerStates
 {
@@ -299,9 +301,7 @@ public class JumpState : PlayerStates
         }
     }
 }
-
-
-
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 public class PlayerController : MonoBehaviour
 {
@@ -324,7 +324,7 @@ public class PlayerController : MonoBehaviour
     public Transform groundCheckL;
     public Transform groundCheckR;
     // Coin.
-    public Transform coin;
+    public GameObject coin;
     public bool _cthrow;
     // The player itself
     public PlayerStates currentState;
