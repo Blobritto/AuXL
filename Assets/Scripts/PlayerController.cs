@@ -130,9 +130,9 @@ public class RunningState : PlayerStates
         }
         
         // Cap fall speed.
-        if (thisObject.rb.velocity.y < -25f)
+        if (thisObject.rb.velocity.y < -35f)
         {
-            thisObject.rb.velocity = new Vector2(thisObject.rb.velocity.x, -25f);
+            thisObject.rb.velocity = new Vector2(thisObject.rb.velocity.x, -35f);
         }
         else
         {
@@ -220,9 +220,9 @@ public class JumpState : PlayerStates
             }
         }
         // Cap fall speed to 20 units.
-        if (thisObject.rb.velocity.y < -25f)
+        if (thisObject.rb.velocity.y < -35f)
         {
-            thisObject.rb.velocity = new Vector2(_airSpeed, -25f);
+            thisObject.rb.velocity = new Vector2(_airSpeed, -35f);
         }
         else
         {
