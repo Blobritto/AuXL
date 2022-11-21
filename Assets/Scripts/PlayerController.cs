@@ -56,7 +56,6 @@ public class PlayerStates
         _jumpBufferTimeCounter = __jumpBufferTimeCounter;
     }
 
-    
     // Utilises the speed of the update function inside the rigidity of fixed update.
     public void SetJumped()
     {
@@ -250,7 +249,6 @@ public class JumpState : PlayerStates
         {
             _groundedJump = false;
         }
-        
         
         // If jump is pressed, if player is grounded within timeframe, then the jump will count, it is buffered.
         if (_jumped && _groundedJump == false)
