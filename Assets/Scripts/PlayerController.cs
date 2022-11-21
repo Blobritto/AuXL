@@ -201,7 +201,10 @@ public class ThrowState : PlayerStates
         Vector2 knockback = Quaternion.AngleAxis(angle, Vector3.forward) * Vector3.right;
         Vector3 knockback3 = new Vector3(knockback.x, knockback.y, 0);
 
-        if (_cthrow)
+        GameObject existingCoin;
+        existingCoin = GameObject.FindWithTag("Coin");
+
+        if (_cthrow && existingCoin == null)
         {
             if (isGrounded())
             {
@@ -209,7 +212,6 @@ public class ThrowState : PlayerStates
             }
             thisObject.rb.velocity = knockback * -50;
             
-            _cthrow = false;
             _jumped = false;
 
             GameObject newCoin;
@@ -226,6 +228,7 @@ public class ThrowState : PlayerStates
                 newCoin.GetComponent<Rigidbody2D>().angularVelocity = 1000f;
             }
         }
+        _cthrow = false;
 
         if (isGrounded())
         {
