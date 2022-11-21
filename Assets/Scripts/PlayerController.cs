@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
 public class PlayerStates
 {
     // Make sure these are protected so they can be accessed by child classes.
@@ -25,9 +24,7 @@ public class PlayerStates
     [SerializeField] protected GameObject coin;
     [SerializeField] protected bool _cthrow;
     [SerializeField] protected PlayerStates currentState;
-
     public virtual void handleInput(PlayerController thisObject) { }
-
     // Set all of the variables referenced within the player class.
     public void SetComponents(Rigidbody2D _rb, SpriteRenderer _renderer, PlayerStates _currentState, Transform _groundCheck, Transform _groundCheckL, Transform _groundCheckR, float __walkSpeed, float __jumpHeight, float __airSpeed, bool __jumped, float __coyoteTime, float __coyoteTimeCounter, float __jumpBufferTime, float __jumpBufferTimeCounter, bool __jumpReset, GameObject _coin, bool __cthrow, bool __groundedJump)
     {
@@ -36,16 +33,13 @@ public class PlayerStates
         currentState = _currentState;
         coin = _coin;
         _cthrow = __cthrow;
-
         _walkSpeed = __walkSpeed;
         _walkAccel = __walkSpeed;
         _airSpeed = __airSpeed;
-        _airAccel = __airSpeed;
-        
+        _airAccel = __airSpeed;        
         groundCheck = _groundCheck;
         groundCheckL = _groundCheckL;
-        groundCheckR = _groundCheckR;
-        
+        groundCheckR = _groundCheckR;       
         _jumped = __jumped;
         _jumpHeight = __jumpHeight;
         _jumpReset = __jumpReset;
@@ -55,24 +49,20 @@ public class PlayerStates
         _jumpBufferTime = __jumpBufferTime;
         _jumpBufferTimeCounter = __jumpBufferTimeCounter;
     }
-
     // Utilises the speed of the update function inside the rigidity of fixed update.
     public void SetJumped()
     {
         _jumped = true;
     }
-
     public void ReleaseJump()
     {
         _jumped = false;
         _jumpReset = true;
     }
-
     public void CoinThrown()
     {
         _cthrow = true;
     }
-
     // If a linecast towards the ground sees the player is touching the floor, then they are grounded.
     public bool isGrounded()
     {
@@ -86,8 +76,7 @@ public class PlayerStates
         {
             return false;
         }
-    }
-    
+    }  
     // Do walk movement.
     public void Move(float speed, float accel, float drag, int state, bool _cthrow)
     {
@@ -120,7 +109,6 @@ public class PlayerStates
         {
             speed = Mathf.MoveTowards(rb.velocity.x, 0, 45f * Time.deltaTime);
         }
-
         // Capping something or other.
         if (speed > accel)
         {
@@ -130,7 +118,6 @@ public class PlayerStates
         {
             speed = -accel;
         }
-
         // Cap fall speed.
         if (rb.velocity.y < -35f)
         {
@@ -148,6 +135,7 @@ public class RunningState : PlayerStates
 {
     public override void handleInput(PlayerController thisObject)
     {
+        // If grounded, then the coyote time is set to max, only when in the air does it count down.
         if (isGrounded())
         {
             _coyoteTimeCounter = _coyoteTime;
@@ -155,18 +143,15 @@ public class RunningState : PlayerStates
         else
         {
             _coyoteTimeCounter -= Time.deltaTime;
-        }
-        
+        }       
         // For sanity sake.
         if (_coyoteTimeCounter < 0.01f)
         {
             _coyoteTimeCounter = 0f;
             _jumped = false;
         }
-
         // Move the player horizontally.
         Move(_walkSpeed, _walkAccel, 45f, 1, _cthrow);
-
         if (_jumped && _coyoteTimeCounter > 0f)
         {
             // Jump the player into the air and switch their state so they have properties of being in the air.
@@ -179,7 +164,6 @@ public class RunningState : PlayerStates
             _groundedJump = true;
             thisObject.currentState.SetComponents(rb, renderer, currentState, groundCheck, groundCheckL, groundCheckR, _walkAccel, _jumpHeight, _airAccel, _jumped, _coyoteTime, _coyoteTimeCounter, _jumpBufferTime, _jumpBufferTimeCounter, _jumpReset, coin, _cthrow, _groundedJump);
         }
-
         // If the left mouse button is clicked / coin is thrown.
         if (_cthrow)
         {
@@ -194,28 +178,27 @@ public class ThrowState : PlayerStates
 {
     public override void handleInput(PlayerController thisObject)
     {
+        // Lots of maths to throw the coin in the direction of the mouse in relation to the player.
         Vector2 mousePosition = new Vector2(Input.mousePosition.x, Input.mousePosition.y);
         Vector2 mouseWorldPosition = Camera.main.ScreenToWorldPoint(mousePosition);
         Vector2 dir = mouseWorldPosition - new Vector2(thisObject.transform.position.x, thisObject.transform.position.y);
         float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
         Vector2 knockback = Quaternion.AngleAxis(angle, Vector3.forward) * Vector3.right;
         Vector3 knockback3 = new Vector3(knockback.x, knockback.y, 0);
-
         GameObject existingCoin;
         existingCoin = GameObject.FindWithTag("Coin");
-
+        // ExistingCoin is to make sure it can only be thrown if no other coin exists in the scene.
         if (_cthrow && existingCoin == null)
         {
+           // Had a bug where if grounded and shot straight up, the effect would be massive, so I nerfed it in these circumstances.
             if (isGrounded())
             {
                 knockback = new Vector2(knockback.x, knockback.y / 2);
             }
-            thisObject.rb.velocity = knockback * -50;
-            
+            thisObject.rb.velocity = knockback * -50;          
             _jumped = false;
-
+            // Creates the new coin to be thrown.
             GameObject newCoin;
-
             newCoin = Object.Instantiate(coin, thisObject.rb.transform.position + (knockback3), Quaternion.identity);
             newCoin.GetComponent<Rigidbody2D>().velocity = knockback * 30;
             
@@ -229,7 +212,7 @@ public class ThrowState : PlayerStates
             }
         }
         _cthrow = false;
-
+        // Throwing state only last a single frame, the player is returned to one of its other states immediately after.
         if (isGrounded())
         {
             thisObject.currentState = new RunningState();
@@ -248,11 +231,11 @@ public class JumpState : PlayerStates
 {
     public override void handleInput(PlayerController thisObject)
     {
+        // if the jump has been reset, then the next jump is not from on the ground.
         if (_jumpReset)
         {
             _groundedJump = false;
-        }
-        
+        }       
         // If jump is pressed, if player is grounded within timeframe, then the jump will count, it is buffered.
         if (_jumped && _groundedJump == false)
         {
@@ -266,14 +249,12 @@ public class JumpState : PlayerStates
         if (_jumpBufferTimeCounter < 0.01f)
         {
             _jumpBufferTimeCounter = 0f;
-        }
-        
+        }     
         // If falling, then not jumping.
         if (thisObject.rb.velocity.y <= 0f)
         {
             _jumped = false;
         }
-
         if (isGrounded())
         {
             // If jumping immediately upon landing, there is no reason to switch back into running state.
@@ -284,8 +265,7 @@ public class JumpState : PlayerStates
                     thisObject.rb.velocity = new Vector2(thisObject.rb.velocity.x, _jumpHeight);
                     _jumpBufferTimeCounter = 0f;
                     _jumpReset = false;
-               }
-                
+               }        
                // If Input key was released before landing within buffer time, a full jump would happen, this checks if the key is still held down, and if not, small jump occurs.
                if (Input.GetKey("space"))
                {
@@ -311,10 +291,8 @@ public class JumpState : PlayerStates
             {
                 thisObject.rb.AddForce(thisObject.transform.up * -1 * 500);
             }
-
             // Moves the player horizontally.
             Move(_airSpeed, _airAccel, 300f, 2, _cthrow);
-
             // If the left mouse button is clicked / coin is thrown.
             if (_cthrow)
             {
@@ -352,7 +330,6 @@ public class PlayerController : MonoBehaviour
     public bool _cthrow;
     // The player itself
     public PlayerStates currentState;
-
     // Start is called before the first frame update
     void Start()
     {
@@ -363,13 +340,11 @@ public class PlayerController : MonoBehaviour
         // Uses the previously defined values and components to be useable within the player finite state machine.
         currentState.SetComponents(rb, renderer, currentState, groundCheck, groundCheckL, groundCheckR, _walkSpeed, _jumpHeight, _airSpeed, _jumped, _coyoteTime, _coyoteTimeCounter, _jumpBufferTime, _jumpBufferTimeCounter, _jumpReset, coin , _cthrow, _groundedJump);
     }
-
     private void FixedUpdate()
     {
         // Input and all derivitive actions take place every frame.
         currentState.handleInput(this);
     }
-
     private void Update()
     {
         if (Input.GetKeyDown("space"))
@@ -386,7 +361,7 @@ public class PlayerController : MonoBehaviour
         }
 
     }
-
+    // When interacting with a coin, if it is moving, the player cannot collect it, so they can be hit by and jump on it, but when it is stationary, the player can retrieve their coin.
     void OnTriggerEnter2D(Collider2D col)
     {
         if (Mathf.Abs(col.gameObject.GetComponent<Rigidbody2D>().velocity.x) < 100f && Mathf.Abs(col.gameObject.GetComponent<Rigidbody2D>().velocity.y) < 100f && Mathf.Abs(col.gameObject.GetComponent<Rigidbody2D>().angularVelocity) < 200f)
