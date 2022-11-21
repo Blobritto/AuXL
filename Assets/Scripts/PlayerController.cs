@@ -210,16 +210,18 @@ public class ThrowState : PlayerStates
             _cthrow = false;
             _jumped = false;
 
-            coin = Object.Instantiate(coin, thisObject.rb.transform.position + (knockback3), Quaternion.identity);
-            coin.GetComponent<Rigidbody2D>().velocity = knockback * 30;
+            GameObject newCoin;
+
+            newCoin = Object.Instantiate(coin, thisObject.rb.transform.position + (knockback3), Quaternion.identity);
+            newCoin.GetComponent<Rigidbody2D>().velocity = knockback * 30;
             
             if (knockback.x > 0)
             {
-                coin.GetComponent<Rigidbody2D>().angularVelocity = -1000f;
+                newCoin.GetComponent<Rigidbody2D>().angularVelocity = -1000f;
             }
             else
             {
-                coin.GetComponent<Rigidbody2D>().angularVelocity = 1000f;
+                newCoin.GetComponent<Rigidbody2D>().angularVelocity = 1000f;
             }
         }
 
@@ -375,7 +377,9 @@ public class PlayerController : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D col)
     {
-        //GameObject.Destroy(col.gameObject);
-        Debug.Log("Destroy");
+        if (Mathf.Abs(col.gameObject.GetComponent<Rigidbody2D>().velocity.x) < 100f && Mathf.Abs(col.gameObject.GetComponent<Rigidbody2D>().velocity.y) < 100f && Mathf.Abs(col.gameObject.GetComponent<Rigidbody2D>().angularVelocity) < 200f)
+        {
+            GameObject.Destroy(col.gameObject);
+        }               
     }
 }
