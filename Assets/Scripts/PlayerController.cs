@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 public class PlayerStates
 {
     // Make sure these are protected so they can be accessed by child classes.
@@ -21,12 +22,13 @@ public class PlayerStates
     [SerializeField] protected Transform groundCheck;
     [SerializeField] protected Transform groundCheckL;
     [SerializeField] protected Transform groundCheckR;
+    [SerializeField] protected GameObject spawnPoint;
     [SerializeField] protected GameObject coin;
     [SerializeField] protected bool _cthrow;
     [SerializeField] protected PlayerStates currentState;
     public virtual void handleInput(PlayerController thisObject) { }
     // Set all of the variables referenced within the player class.
-    public void SetComponents(Rigidbody2D _rb, SpriteRenderer _renderer, PlayerStates _currentState, Transform _groundCheck, Transform _groundCheckL, Transform _groundCheckR, float __walkSpeed, float __jumpHeight, float __airSpeed, bool __jumped, float __coyoteTime, float __coyoteTimeCounter, float __jumpBufferTime, float __jumpBufferTimeCounter, bool __jumpReset, GameObject _coin, bool __cthrow, bool __groundedJump)
+    public void SetComponents(Rigidbody2D _rb, SpriteRenderer _renderer, PlayerStates _currentState, Transform _groundCheck, Transform _groundCheckL, Transform _groundCheckR, float __walkSpeed, float __jumpHeight, float __airSpeed, bool __jumped, float __coyoteTime, float __coyoteTimeCounter, float __jumpBufferTime, float __jumpBufferTimeCounter, bool __jumpReset, GameObject _coin, bool __cthrow, bool __groundedJump, GameObject _spawnPoint)
     {
         rb = _rb;
         renderer = _renderer;
@@ -48,6 +50,7 @@ public class PlayerStates
         _coyoteTimeCounter = __coyoteTimeCounter;
         _jumpBufferTime = __jumpBufferTime;
         _jumpBufferTimeCounter = __jumpBufferTimeCounter;
+        spawnPoint = _spawnPoint;
     }
     // Utilises the speed of the update function inside the rigidity of fixed update.
     public void SetJumped()
@@ -109,6 +112,14 @@ public class PlayerStates
         {
             speed = Mathf.MoveTowards(rb.velocity.x, 0, 45f * Time.deltaTime);
         }
+        if (Input.GetKey("r"))
+        {
+            rb.transform.position = spawnPoint.transform.position;
+            if (GameObject.FindWithTag("Coin") != null)
+            {
+                GameObject.Destroy(GameObject.FindWithTag("Coin").gameObject);
+            }
+        }
         // Capping something or other.
         if (speed > accel)
         {
@@ -162,13 +173,13 @@ public class RunningState : PlayerStates
             _walkSpeed = 0f;
             _jumpReset = false;
             _groundedJump = true;
-            thisObject.currentState.SetComponents(rb, renderer, currentState, groundCheck, groundCheckL, groundCheckR, _walkAccel, _jumpHeight, _airAccel, _jumped, _coyoteTime, _coyoteTimeCounter, _jumpBufferTime, _jumpBufferTimeCounter, _jumpReset, coin, _cthrow, _groundedJump);
+            thisObject.currentState.SetComponents(rb, renderer, currentState, groundCheck, groundCheckL, groundCheckR, _walkAccel, _jumpHeight, _airAccel, _jumped, _coyoteTime, _coyoteTimeCounter, _jumpBufferTime, _jumpBufferTimeCounter, _jumpReset, coin, _cthrow, _groundedJump, spawnPoint);
         }
         // If the left mouse button is clicked / coin is thrown.
         if (_cthrow)
         {
             thisObject.currentState = new ThrowState();
-            thisObject.currentState.SetComponents(rb, renderer, currentState, groundCheck, groundCheckL, groundCheckR, _walkAccel, _jumpHeight, _airAccel, _jumped, _coyoteTime, _coyoteTimeCounter, _jumpBufferTime, _jumpBufferTimeCounter, _jumpReset, coin, _cthrow, _groundedJump);
+            thisObject.currentState.SetComponents(rb, renderer, currentState, groundCheck, groundCheckL, groundCheckR, _walkAccel, _jumpHeight, _airAccel, _jumped, _coyoteTime, _coyoteTimeCounter, _jumpBufferTime, _jumpBufferTimeCounter, _jumpReset, coin, _cthrow, _groundedJump, spawnPoint);
         }
     }
 }
@@ -216,12 +227,12 @@ public class ThrowState : PlayerStates
         if (isGrounded())
         {
             thisObject.currentState = new RunningState();
-            thisObject.currentState.SetComponents(rb, renderer, currentState, groundCheck, groundCheckL, groundCheckR, _walkAccel, _jumpHeight, _airAccel, _jumped, _coyoteTime, _coyoteTimeCounter, _jumpBufferTime, _jumpBufferTimeCounter, _jumpReset, coin, _cthrow, _groundedJump);
+            thisObject.currentState.SetComponents(rb, renderer, currentState, groundCheck, groundCheckL, groundCheckR, _walkAccel, _jumpHeight, _airAccel, _jumped, _coyoteTime, _coyoteTimeCounter, _jumpBufferTime, _jumpBufferTimeCounter, _jumpReset, coin, _cthrow, _groundedJump, spawnPoint);
         }
         else
         {
             thisObject.currentState = new JumpState();
-            thisObject.currentState.SetComponents(rb, renderer, currentState, groundCheck, groundCheckL, groundCheckR, _walkAccel, _jumpHeight, _airAccel, _jumped, _coyoteTime, _coyoteTimeCounter, _jumpBufferTime, _jumpBufferTimeCounter, _jumpReset, coin, _cthrow, _groundedJump);
+            thisObject.currentState.SetComponents(rb, renderer, currentState, groundCheck, groundCheckL, groundCheckR, _walkAccel, _jumpHeight, _airAccel, _jumped, _coyoteTime, _coyoteTimeCounter, _jumpBufferTime, _jumpBufferTimeCounter, _jumpReset, coin, _cthrow, _groundedJump, spawnPoint);
         }
     }
 }
@@ -280,7 +291,7 @@ public class JumpState : PlayerStates
                 _jumped = false;
                 _jumpReset = false;
                 _groundedJump = false;
-                thisObject.currentState.SetComponents(rb, renderer, currentState, groundCheck, groundCheckL, groundCheckR, _walkAccel, _jumpHeight, _airAccel, _jumped, _coyoteTime, _coyoteTimeCounter, _jumpBufferTime, _jumpBufferTimeCounter, _jumpReset, coin, _cthrow, _groundedJump);
+                thisObject.currentState.SetComponents(rb, renderer, currentState, groundCheck, groundCheckL, groundCheckR, _walkAccel, _jumpHeight, _airAccel, _jumped, _coyoteTime, _coyoteTimeCounter, _jumpBufferTime, _jumpBufferTimeCounter, _jumpReset, coin, _cthrow, _groundedJump, spawnPoint);
             }
         }
         // Do air movement, slightly faster than walk movement.
@@ -297,7 +308,7 @@ public class JumpState : PlayerStates
             if (_cthrow)
             {
                 thisObject.currentState = new ThrowState();
-                thisObject.currentState.SetComponents(rb, renderer, currentState, groundCheck, groundCheckL, groundCheckR, _walkAccel, _jumpHeight, _airAccel, _jumped, _coyoteTime, _coyoteTimeCounter, _jumpBufferTime, _jumpBufferTimeCounter, _jumpReset, coin, _cthrow, _groundedJump);
+                thisObject.currentState.SetComponents(rb, renderer, currentState, groundCheck, groundCheckL, groundCheckR, _walkAccel, _jumpHeight, _airAccel, _jumped, _coyoteTime, _coyoteTimeCounter, _jumpBufferTime, _jumpBufferTimeCounter, _jumpReset, coin, _cthrow, _groundedJump, spawnPoint);
             }
         }
     }
@@ -325,6 +336,8 @@ public class PlayerController : MonoBehaviour
     public Transform groundCheck;
     public Transform groundCheckL;
     public Transform groundCheckR;
+    // Spawn area
+    public GameObject spawnPoint;
     // Coin.
     public GameObject coin;
     public bool _cthrow;
@@ -335,10 +348,11 @@ public class PlayerController : MonoBehaviour
     {
         rb = GetComponent<Rigidbody2D>();
         renderer = GetComponent<SpriteRenderer>();
+        spawnPoint = GameObject.FindWithTag("Spawn");
         // By default, the player is walking on the ground.
         currentState = new RunningState();
         // Uses the previously defined values and components to be useable within the player finite state machine.
-        currentState.SetComponents(rb, renderer, currentState, groundCheck, groundCheckL, groundCheckR, _walkSpeed, _jumpHeight, _airSpeed, _jumped, _coyoteTime, _coyoteTimeCounter, _jumpBufferTime, _jumpBufferTimeCounter, _jumpReset, coin , _cthrow, _groundedJump);
+        currentState.SetComponents(rb, renderer, currentState, groundCheck, groundCheckL, groundCheckR, _walkSpeed, _jumpHeight, _airSpeed, _jumped, _coyoteTime, _coyoteTimeCounter, _jumpBufferTime, _jumpBufferTimeCounter, _jumpReset, coin , _cthrow, _groundedJump, spawnPoint);
     }
     private void FixedUpdate()
     {
@@ -347,7 +361,7 @@ public class PlayerController : MonoBehaviour
     }
     private void Update()
     {
-        if (Input.GetKeyDown("space"))
+        if (Input.GetKeyDown("space") && SceneManager.GetActiveScene().buildIndex > 0)
         {
             currentState.SetJumped();
         }
@@ -355,7 +369,7 @@ public class PlayerController : MonoBehaviour
         {
             currentState.ReleaseJump();
         }
-        if (Input.GetMouseButtonDown(0))
+        if (Input.GetMouseButtonDown(0) && SceneManager.GetActiveScene().buildIndex > 1)
         {
             currentState.CoinThrown();
         }
@@ -364,7 +378,7 @@ public class PlayerController : MonoBehaviour
     // When interacting with a coin, if it is moving, the player cannot collect it, so they can be hit by and jump on it, but when it is stationary, the player can retrieve their coin.
     void OnTriggerEnter2D(Collider2D col)
     {
-        if (Mathf.Abs(col.gameObject.GetComponent<Rigidbody2D>().velocity.x) < 100f && Mathf.Abs(col.gameObject.GetComponent<Rigidbody2D>().velocity.y) < 100f && Mathf.Abs(col.gameObject.GetComponent<Rigidbody2D>().angularVelocity) < 200f)
+        if (Mathf.Abs(col.gameObject.GetComponent<Rigidbody2D>().velocity.x) < 100f && Mathf.Abs(col.gameObject.GetComponent<Rigidbody2D>().velocity.y) < 100f && Mathf.Abs(col.gameObject.GetComponent<Rigidbody2D>().angularVelocity) < 200f && col.tag == "Coin")
         {
             GameObject.Destroy(col.gameObject);
         }               
