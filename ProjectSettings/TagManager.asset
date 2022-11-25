@@ -6,11 +6,13 @@ TagManager:
   tags:
   - Coin
   - Spawn
+  - Background
+  - Floor
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Background
   - Water
   - UI
   - Player
