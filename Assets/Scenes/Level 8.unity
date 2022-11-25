@@ -227,7 +227,7 @@ MonoBehaviour:
     m_Bits: 64
   spawnPoint: {fileID: 1963520910}
   fov: 45
-  baseAngle: 270
+  baseAngle: 0
   rayCount: 50
   viewDistance: 15
 --- !u!1 &519420028
