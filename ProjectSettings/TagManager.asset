@@ -8,6 +8,7 @@ TagManager:
   - Spawn
   - Background
   - Floor
+  - Glass
   layers:
   - Default
   - TransparentFX
@@ -20,7 +21,7 @@ TagManager:
   - Wall
   - Coin
   - Button
-  - 
+  - Glass
   - 
   - 
   - 
