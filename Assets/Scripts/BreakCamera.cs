@@ -5,12 +5,10 @@ using UnityEngine;
 public class BreakCamera : MonoBehaviour
 {
     Rigidbody2D rb;
-    //BoxCollider2D bc;
 
     // Start is called before the first frame update
     void Start()
     {
-        //bc = GetComponent<BoxCollider2D>();
         rb = GetComponent<Rigidbody2D>();
         rb.gravityScale = 0f;
     }
@@ -26,7 +24,6 @@ public class BreakCamera : MonoBehaviour
         {
             rb.gravityScale = 3f;
             GameObject.Destroy(transform.GetChild(0).gameObject);
-            //bc.isTrigger = true;
         }
 
         if (col.gameObject.tag == "Floor" && transform.childCount == 0)

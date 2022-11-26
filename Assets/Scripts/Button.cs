@@ -13,10 +13,7 @@ public class Button : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         renderer = GetComponent<SpriteRenderer>();
         renderer.color = new Color(1, 0, 0, 1);
-        for (int i = 0; i < (door.Length - 1); i++)
-        {
-            door[i].SetActive(true);
-        }
+        DoorSet(true);
 
     }
 
@@ -33,19 +30,21 @@ public class Button : MonoBehaviour
             if (renderer.color == new Color(1, 0, 0, 1))
             {
                 renderer.color = new Color(0, 1, 0, 1);
-                for (int i = 0; i < (door.Length - 1); i++)
-                {
-                    door[i].SetActive(false);
-                }
+                DoorSet(false);
             }  
             else
             {
                 renderer.color = new Color(1, 0, 0, 1);
-                for (int i = 0; i < (door.Length - 1); i++)
-                {
-                    door[i].SetActive(true);
-                }
+                DoorSet(true);
             }
+        }
+    }
+
+    void DoorSet(bool active)
+    {
+        for (int i = 0; i <= (door.Length - 1); i++)
+        {
+            door[i].SetActive(active);
         }
     }
 }
