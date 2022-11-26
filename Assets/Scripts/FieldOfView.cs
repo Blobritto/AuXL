@@ -19,6 +19,7 @@ public class FieldOfView : MonoBehaviour
     {
         mesh = new Mesh();
         mesh = GetComponent<MeshFilter>().mesh;
+        transform.rotation = new Quaternion(0, 0, 0, 0);
     }
 
     private void Update()
@@ -62,7 +63,7 @@ public class FieldOfView : MonoBehaviour
             vertexIndex += 1;
             angle -= angleIncrease;
 
-            RaycastHit2D playerHit = Physics2D.Raycast(transform.position, new Vector3(Mathf.Cos(angleRad), Mathf.Sin(angleRad)), viewDistance, playerMask);
+            RaycastHit2D playerHit = Physics2D.Raycast(transform.position, new Vector3(Mathf.Cos(angleRad), Mathf.Sin(angleRad)), hit.distance, playerMask);
             if (playerHit.collider != null)
             {
                 if (GameObject.FindWithTag("Coin") != null)
