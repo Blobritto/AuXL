@@ -211,7 +211,7 @@ public class ThrowState : PlayerStates
             // Creates the new coin to be thrown.
             GameObject newCoin;
             newCoin = Object.Instantiate(coin, thisObject.rb.transform.position + (knockback3), Quaternion.identity);
-            newCoin.GetComponent<Rigidbody2D>().velocity = knockback * 30;
+            newCoin.GetComponent<Rigidbody2D>().velocity = knockback3 * 30;
             
             if (knockback.x > 0)
             {

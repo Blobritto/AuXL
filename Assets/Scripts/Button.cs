@@ -13,6 +13,7 @@ public class Button : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         renderer = GetComponent<SpriteRenderer>();
         renderer.color = new Color(1, 0, 0, 1);
+        door.SetActive(true);
         
     }
 
@@ -26,8 +27,16 @@ public class Button : MonoBehaviour
     {
         if (col.gameObject.tag == "Coin" || col.gameObject.tag == "Player")
         {
-            renderer.color = new Color(0, 1, 0, 1);
-            GameObject.Destroy(door.gameObject);
+            if (renderer.color == new Color(1, 0, 0, 1))
+            {
+                renderer.color = new Color(0, 1, 0, 1);
+                door.SetActive(false);
+            }  
+            else
+            {
+                renderer.color = new Color(1, 0, 0, 1);
+                door.SetActive(true);
+            }
         }
     }
 }
