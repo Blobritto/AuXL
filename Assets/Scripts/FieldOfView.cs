@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class FieldOfView : MonoBehaviour
 {
@@ -66,11 +67,7 @@ public class FieldOfView : MonoBehaviour
             RaycastHit2D playerHit = Physics2D.Raycast(transform.position, new Vector3(Mathf.Cos(angleRad), Mathf.Sin(angleRad)), hit.distance, playerMask);
             if (playerHit.collider != null)
             {
-                if (GameObject.FindWithTag("Coin") != null)
-                {
-                    GameObject.Destroy(GameObject.FindWithTag("Coin").gameObject);
-                }
-                playerHit.collider.gameObject.transform.position = spawnPoint.transform.position;
+                SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
             }
         }
         triangles[0] = 0;

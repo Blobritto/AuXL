@@ -71,7 +71,10 @@ public class PlayerStates
     {
         if (Physics2D.Linecast(rb.transform.position, groundCheck.position, 1 << LayerMask.NameToLayer("Floor")) ||
         Physics2D.Linecast(rb.transform.position, groundCheckL.position, 1 << LayerMask.NameToLayer("Floor")) ||
-        Physics2D.Linecast(rb.transform.position, groundCheckR.position, 1 << LayerMask.NameToLayer("Floor")))
+        Physics2D.Linecast(rb.transform.position, groundCheckR.position, 1 << LayerMask.NameToLayer("Floor")) || 
+        Physics2D.Linecast(rb.transform.position, groundCheck.position, 1 << LayerMask.NameToLayer("Button")) ||
+        Physics2D.Linecast(rb.transform.position, groundCheckL.position, 1 << LayerMask.NameToLayer("Button")) ||
+        Physics2D.Linecast(rb.transform.position, groundCheckR.position, 1 << LayerMask.NameToLayer("Button")))
         {
             return true;
         }
@@ -114,11 +117,7 @@ public class PlayerStates
         }
         if (Input.GetKey("r"))
         {
-            rb.transform.position = spawnPoint.transform.position;
-            if (GameObject.FindWithTag("Coin") != null)
-            {
-                GameObject.Destroy(GameObject.FindWithTag("Coin").gameObject);
-            }
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
         }
         // Capping something or other.
         if (speed > accel)

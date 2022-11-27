@@ -9,6 +9,7 @@ public class Button : MonoBehaviour
     public GameObject[] door;
     public GameObject[] doorClose;
     public GameObject[] permaLock;
+    public GameObject[] startOpen;
     Color temp;
     // Start is called before the first frame update
     void Start()
@@ -16,24 +17,10 @@ public class Button : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         renderer = GetComponent<SpriteRenderer>();
         renderer.color = new Color(1, 0, 0, 1);
-        temp = permaLock[0].GetComponent<SpriteRenderer>().color;
+        temp = door[0].GetComponent<SpriteRenderer>().color;
         DoorSet(true, door);
+        DoorSet(false, startOpen);
 
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        if (Input.GetKey("r"))
-        {
-            renderer.color = new Color(1, 0, 0, 1);
-            DoorSet(true, door);
-            for (int i = 0; i <= (permaLock.Length - 1); i++)
-            {
-                permaLock[i].GetComponent<SpriteRenderer>().color = temp;
-            }
-        }
-        
     }
 
     void OnCollisionEnter2D(Collision2D col)
@@ -44,6 +31,7 @@ public class Button : MonoBehaviour
             {
                 renderer.color = new Color(0, 1, 0, 1);
                 DoorSet(false, door);
+                DoorSet(true, startOpen);
                 DoorSet(true, doorClose);
                 DoorSet(true, permaLock);
                 for (int i = 0; i <= (permaLock.Length - 1); i++)
@@ -55,6 +43,7 @@ public class Button : MonoBehaviour
             {
                 renderer.color = new Color(1, 0, 0, 1);
                 DoorSet(true, door);
+                DoorSet(false, startOpen);
                 DoorSet(false, doorClose);
                 DoorSet(true, permaLock);
                 for (int i = 0; i <= (permaLock.Length - 1); i++)
@@ -69,7 +58,10 @@ public class Button : MonoBehaviour
     {
         for (int i = 0; i <= (door.Length - 1); i++)
         {
-            door[i].SetActive(active);
+            if (door[i].GetComponent<SpriteRenderer>().color == temp)
+            {
+                door[i].SetActive(active);
+            }          
         }
     }
 }
