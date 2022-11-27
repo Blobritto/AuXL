@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 8462456591393217865}
   - component: {fileID: 8462456591393217870}
   - component: {fileID: 8462456591393217871}
-  m_Layer: 7
+  m_Layer: 10
   m_Name: Button
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -148,4 +148,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   rb: {fileID: 0}
   renderer: {fileID: 0}
-  door: {fileID: 7858458326909110834, guid: 4036ee5963554164dbe9b5542191d08a, type: 3}
+  door:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}

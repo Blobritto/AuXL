@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+
 public class PlayerStates
 {
     // Make sure these are protected so they can be accessed by child classes.
@@ -71,7 +72,10 @@ public class PlayerStates
     {
         if (Physics2D.Linecast(rb.transform.position, groundCheck.position, 1 << LayerMask.NameToLayer("Floor")) ||
         Physics2D.Linecast(rb.transform.position, groundCheckL.position, 1 << LayerMask.NameToLayer("Floor")) ||
-        Physics2D.Linecast(rb.transform.position, groundCheckR.position, 1 << LayerMask.NameToLayer("Floor")))
+        Physics2D.Linecast(rb.transform.position, groundCheckR.position, 1 << LayerMask.NameToLayer("Floor")) || 
+        Physics2D.Linecast(rb.transform.position, groundCheck.position, 1 << LayerMask.NameToLayer("Button")) ||
+        Physics2D.Linecast(rb.transform.position, groundCheckL.position, 1 << LayerMask.NameToLayer("Button")) ||
+        Physics2D.Linecast(rb.transform.position, groundCheckR.position, 1 << LayerMask.NameToLayer("Button")))
         {
             return true;
         }
@@ -114,11 +118,7 @@ public class PlayerStates
         }
         if (Input.GetKey("r"))
         {
-            rb.transform.position = spawnPoint.transform.position;
-            if (GameObject.FindWithTag("Coin") != null)
-            {
-                GameObject.Destroy(GameObject.FindWithTag("Coin").gameObject);
-            }
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
         }
         // Capping something or other.
         if (speed > accel)
@@ -211,7 +211,7 @@ public class ThrowState : PlayerStates
             // Creates the new coin to be thrown.
             GameObject newCoin;
             newCoin = Object.Instantiate(coin, thisObject.rb.transform.position + (knockback3), Quaternion.identity);
-            newCoin.GetComponent<Rigidbody2D>().velocity = knockback * 30;
+            newCoin.GetComponent<Rigidbody2D>().velocity = knockback3 * 30;
             
             if (knockback.x > 0)
             {
@@ -343,7 +343,6 @@ public class PlayerController : MonoBehaviour
     public bool _cthrow;
     // The player itself
     public PlayerStates currentState;
-    // Start is called before the first frame update
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -361,7 +360,7 @@ public class PlayerController : MonoBehaviour
     }
     private void Update()
     {
-        if (Input.GetKeyDown("space") && SceneManager.GetActiveScene().buildIndex > 0)
+        if (Input.GetKeyDown("space") && SceneManager.GetActiveScene().buildIndex > 1)
         {
             currentState.SetJumped();
         }
@@ -369,7 +368,7 @@ public class PlayerController : MonoBehaviour
         {
             currentState.ReleaseJump();
         }
-        if (Input.GetMouseButtonDown(0) && SceneManager.GetActiveScene().buildIndex > 1)
+        if (Input.GetMouseButtonDown(0) && SceneManager.GetActiveScene().buildIndex > 2)
         {
             currentState.CoinThrown();
         }

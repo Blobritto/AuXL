@@ -245,9 +245,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'What''s the matter?
-
-    Can''t reach it?'
+  m_text: Hit it to open the door
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -463,7 +461,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1023907394}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 7.88, y: -4.26, z: 0}
+  m_LocalPosition: {x: -13.49, y: -4.59, z: 0}
   m_LocalScale: {x: 4.951, y: 12.129951, z: 4.951}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -526,7 +524,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -665.3, y: -375.95}
+  m_AnchoredPosition: {x: -666.36, y: -384.87}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1059786403
@@ -549,7 +547,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Remember you can throw that coin.
+  m_text: This is a button
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -1242,10 +1240,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 2185220723721602005, guid: 4036ee5963554164dbe9b5542191d08a, type: 3}
-      propertyPath: m_BodyType
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 7858458326909110834, guid: 4036ee5963554164dbe9b5542191d08a, type: 3}
       propertyPath: m_Name
       value: Door
@@ -1513,7 +1507,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8462456591393217867, guid: 6c0b2482b2ddfdd469248afb8dae8b87, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 9.33
+      value: -9.19
       objectReference: {fileID: 0}
     - target: {fileID: 8462456591393217867, guid: 6c0b2482b2ddfdd469248afb8dae8b87, type: 3}
       propertyPath: m_LocalPosition.z
@@ -1521,7 +1515,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8462456591393217867, guid: 6c0b2482b2ddfdd469248afb8dae8b87, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8462456591393217867, guid: 6c0b2482b2ddfdd469248afb8dae8b87, type: 3}
       propertyPath: m_LocalRotation.x
@@ -1533,7 +1527,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8462456591393217867, guid: 6c0b2482b2ddfdd469248afb8dae8b87, type: 3}
       propertyPath: m_LocalRotation.z
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8462456591393217867, guid: 6c0b2482b2ddfdd469248afb8dae8b87, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -1545,7 +1539,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8462456591393217867, guid: 6c0b2482b2ddfdd469248afb8dae8b87, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
-      value: 180
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8462456591393217868, guid: 6c0b2482b2ddfdd469248afb8dae8b87, type: 3}
       propertyPath: m_Name
@@ -1553,6 +1547,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8462456591393217871, guid: 6c0b2482b2ddfdd469248afb8dae8b87, type: 3}
       propertyPath: door
+      value: 
+      objectReference: {fileID: 1316892644}
+    - target: {fileID: 8462456591393217871, guid: 6c0b2482b2ddfdd469248afb8dae8b87, type: 3}
+      propertyPath: door.Array.data[0]
       value: 
       objectReference: {fileID: 1316892644}
     m_RemovedComponents: []

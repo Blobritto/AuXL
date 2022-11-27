@@ -4,18 +4,10 @@ using UnityEngine;
 
 public class MakePlayer : MonoBehaviour
 {
+    // Spawn the player at the start of the scene.
     public GameObject player;
-    
-    // Start is called before the first frame update
     void Start()
     {
-        Instantiate(player, transform.position, Quaternion.identity);
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
+        Instantiate(player, transform.position, Quaternion.identity);   
     }
 }
