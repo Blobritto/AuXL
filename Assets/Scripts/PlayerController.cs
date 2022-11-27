@@ -360,7 +360,7 @@ public class PlayerController : MonoBehaviour
     }
     private void Update()
     {
-        if (Input.GetKeyDown("space") && SceneManager.GetActiveScene().buildIndex > 0)
+        if (Input.GetKeyDown("space") && SceneManager.GetActiveScene().buildIndex > 1)
         {
             currentState.SetJumped();
         }
@@ -368,7 +368,7 @@ public class PlayerController : MonoBehaviour
         {
             currentState.ReleaseJump();
         }
-        if (Input.GetMouseButtonDown(0) && SceneManager.GetActiveScene().buildIndex > 1)
+        if (Input.GetMouseButtonDown(0) && SceneManager.GetActiveScene().buildIndex > 2)
         {
             currentState.CoinThrown();
         }
