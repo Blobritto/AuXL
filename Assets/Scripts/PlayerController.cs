@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+
 public class PlayerStates
 {
     // Make sure these are protected so they can be accessed by child classes.
@@ -342,7 +343,6 @@ public class PlayerController : MonoBehaviour
     public bool _cthrow;
     // The player itself
     public PlayerStates currentState;
-    // Start is called before the first frame update
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();

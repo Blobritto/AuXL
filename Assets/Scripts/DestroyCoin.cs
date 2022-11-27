@@ -4,26 +4,19 @@ using UnityEngine;
 
 public class DestroyCoin : MonoBehaviour
 {
+    // Only be nice once, not every frame.
     public bool wasNice;
-
-    // Start is called before the first frame update
     void Start()
     {
         wasNice = false;
     }
-
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
-
     void OnTriggerEnter2D(Collider2D col)
     {
         if (col.gameObject.tag == "Player" && wasNice == false)
         {
             if (GameObject.FindWithTag("Coin") != null)
             {
+                // Destroys the coin on screen.
                 GameObject.Destroy(GameObject.FindWithTag("Coin").gameObject);
                 wasNice = true;
             }
