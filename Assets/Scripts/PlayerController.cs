@@ -116,9 +116,15 @@ public class PlayerStates
         {
             speed = Mathf.MoveTowards(rb.velocity.x, 0, 45f * Time.deltaTime);
         }
+        // Restart level.
         if (Input.GetKey("r"))
         {
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        }
+        // Skip level.
+        if (Input.GetKey("p"))
+        {
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
         }
         // Capping something or other.
         if (speed > accel)
@@ -360,7 +366,7 @@ public class PlayerController : MonoBehaviour
     }
     private void Update()
     {
-        if (Input.GetKeyDown("space") && SceneManager.GetActiveScene().buildIndex > 1)
+        if (Input.GetKeyDown("space") && SceneManager.GetActiveScene().buildIndex > 2)
         {
             currentState.SetJumped();
         }
@@ -368,7 +374,7 @@ public class PlayerController : MonoBehaviour
         {
             currentState.ReleaseJump();
         }
-        if (Input.GetMouseButtonDown(0) && SceneManager.GetActiveScene().buildIndex > 2)
+        if (Input.GetMouseButtonDown(0) && SceneManager.GetActiveScene().buildIndex > 3)
         {
             currentState.CoinThrown();
         }
